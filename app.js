@@ -127,13 +127,16 @@ asanaCheckToken = function(req, res, next) {
 
 app.enable('trust proxy')
 app.use(express.cookieParser())
+app.use('/dharana/static', express.static('static'))
 
 // When done -- show "main screen"
 app.get('/dharana/',
 	asanaCheckToken,
 	function(req, res) {
-		res.end(JSON.stringify(req.asanaTok))
+		//res.end(JSON.stringify(req.asanaTok))
+		res.sendfile("static/tasklist.html")
 	})
+
 
 // For Asana OAuth authorization flow
 app.get('/dharana/auth/',
