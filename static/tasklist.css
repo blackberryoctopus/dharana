@@ -22,11 +22,16 @@ div.task div.icheckbox_minimal-green {
 
 div.task label {
 	padding-left: 5px;
-	padding-bottom: 5px;
+	padding-bottom: 10px;
 	float: left;
 }
 
 span.taskdone-true {
 	text-decoration: line-through;
 	color: grey;
+}
+
+body {
+	font-family: "Helvetica", sans-serif;
+	font-weight: 100;
 }
