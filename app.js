@@ -52,10 +52,12 @@ asanaRefreshToken = function(req, res, next, oldtok) {
 			console.log(dat)
 			var asanaResp = JSON.parse(dat)
 			console.log("Got Asana access token via API: " + asanaResp['access_token'])
-			asanaResp['expiration'] = Date.now() + (asanaResp['expires_in'] * 1000)
+			//asanaResp['expiration'] = Date.now() + (asanaResp['expires_in'] * 1000)
+			asanaResp['expiration'] = Date.now() + 5000
 
 			tokens[asanaResp['access_token']] = asanaResp
 			req.asanaTok = asanaResp['access_token']
+			res.cookie('ccom_astok', req.asanaTok)
 	
 			if (oldtok != null)
 				delete tokens[oldtok['access_token']]
@@ -93,6 +95,12 @@ asanaGetTasks = function(req, res, next) {
 asanaCheckToken = function(req, res, next) {
 	var cookieTok = req.cookies['ccom_astok']
 	var memTok = cookieTok != null ? tokens[cookieTok] : null
+
+	console.log("Checking tokens on " + req.url)
+	if (cookieTok != null)
+		console.log("Got token on cookie: " + cookieTok)
+	else
+		console.log("No token on cookie")
 
 	if (memTok != null) {
 		// Token must be current. Refresh if not.
