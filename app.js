@@ -52,8 +52,8 @@ asanaRefreshToken = function(req, res, next, oldtok) {
 			console.log(dat)
 			var asanaResp = JSON.parse(dat)
 			console.log("Got Asana access token via API: " + asanaResp['access_token'])
-			//asanaResp['expiration'] = Date.now() + (asanaResp['expires_in'] * 1000)
-			asanaResp['expiration'] = Date.now() + 5000
+			asanaResp['expiration'] = Date.now() + (asanaResp['expires_in'] * 1000)
+			//asanaResp['expiration'] = Date.now() + 5000
 
 			tokens[asanaResp['access_token']] = asanaResp
 			req.asanaTok = asanaResp['access_token']
