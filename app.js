@@ -11,7 +11,7 @@ var time = new Date()
 asanaRefreshToken = function(req, res, next, oldtok) {
 	oldtok = (typeof oldtok == undefined) ? null : oldtok
 
-	tokReqBody = {
+	var tokReqBody = {
 		"grant_type": oldtok != null ? "refresh_token" : "authorization_code",
 		"client_id":5313508784614,
 		"client_secret":"f3054bf5395077756094bed77178ef1d",
@@ -19,8 +19,8 @@ asanaRefreshToken = function(req, res, next, oldtok) {
 	}
 
 	if (oldtok != null) {
-		console.log("Processing token refresh request")
-		tokReqBody["refresh_token"] = oldtok['refresh_token']
+		console.log("Processing token refresh request with old token: " + JSON.stringify(oldtok))
+		tokReqBody['refresh_token'] = oldtok['refresh_token']
 	} else {
 		var qry = url.parse(req.url, true)
 		var code = qry.query['code']
@@ -28,6 +28,7 @@ asanaRefreshToken = function(req, res, next, oldtok) {
 		tokReqBody["code"] = code
 	}
 
+	console.log("Request: " + JSON.stringify(tokReqBody))
 	tokReqBody = querystring.stringify(tokReqBody)
 
 	tokReqOpts = {
@@ -49,11 +50,14 @@ asanaRefreshToken = function(req, res, next, oldtok) {
 		})
 
 		tokResp.on('end', function() {
-			console.log(dat)
+			console.log("Response: " + dat)
 			var asanaResp = JSON.parse(dat)
 			console.log("Got Asana access token via API: " + asanaResp['access_token'])
 			asanaResp['expiration'] = Date.now() + (asanaResp['expires_in'] * 1000)
 			//asanaResp['expiration'] = Date.now() + 5000
+
+			if (asanaResp['refresh_token'] == null)
+				asanaResp['refresh_token'] = oldtok['refresh_token']
 
 			tokens[asanaResp['access_token']] = asanaResp
 			req.asanaTok = asanaResp['access_token']
