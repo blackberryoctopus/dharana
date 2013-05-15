@@ -1,36 +1,41 @@
 <html ng-app>
 <head>
+	<link rel="stylesheet" type="text/css" href="static/css/bootstrap.css"/>
 	<link rel="stylesheet" type="text/css" href="static/icheck/skins/minimal/green.css"/>
 	<link rel="stylesheet" type="text/css" href="static/tasklist.css"/>
-
-	<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
-	<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.6/angular.min.js"></script>
-	<script src="static/icheck/jquery.icheck.min.js"></script>
-	<script src="static/tasklist.js" type="text/javascript"></script>
 </head>
 <body ng-controller="TaskListCtrl">
 <div>
 	<h1>Tasks</h1>
 	<ul class="tasklist">
 		<li ng-repeat="task in tasks | filter:{completed:false}">
-			<div class="task">
+			<!-- <div class="task"> -->
 				<input type="checkbox" id="task{{task.id}}" ng-model="task.completed">
-				<label for="task{{task.id}}"><span class="taskdone-{{task.completed}}">{{task.name}}</span></label>
-				{{icheck(task.id)}}
-			</div>
-		</li>
-	</ul>
-
-	<h1>Completed Tasks</h1>
-	<ul class="tasklist">
-		<li ng-repeat="task in tasks | filter:{completed:true}">
-			<div class="task">
-				<input type="checkbox" id="task{{task.id}}" ng-model="task.completed">
-				<label for="task{{task.id}}"><span class="taskdone-{{task.completed}}">{{task.name}}</span></label>
-				{{icheck(task.id)}}
-			</div>
+				<label for="task{{task.id}}">
+					<span class="taskdone-{{task.completed}}">{{task.name}}</span>
+					{{icheck(task.id)}}
+				</label>
+			<!-- </div> -->
 		</li>
 	</ul>
 </div>
+
+<div>
+	<h1>Completed Tasks</h1>
+	<ul class="tasklist">
+		<li ng-repeat="task in tasks | filter:{completed:true}">
+			<input class="checkbox" type="checkbox" id="task{{task.id}}" ng-model="task.completed">
+			<label for="task{{task.id}}">
+				<span class="taskdone-{{task.completed}}">{{task.name}}</span>
+				{{icheck(task.id)}}
+			</label>
+		</li>
+	</ul>
+</div>
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.6/angular.min.js"></script>
+<script src="static/icheck/jquery.icheck.min.js"></script>
+<script src="static/tasklist.js" type="text/javascript"></script>
 </body>
 </html>

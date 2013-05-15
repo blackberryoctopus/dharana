@@ -1,29 +1,17 @@
-span.done-true {
-	text-decoration: line-through;
-	color: grey;
-}
-
 ul.tasklist {
 	list-style:none outside none;
 }
 
 ul.tasklist li {
-	padding-bottom: 10px;
+	line-height: 18px;
+	position: relative;
+	padding-bottom: 5px;
 }
 
-div.task {
-	float: none;
-	clear: both;
-}
-
-div.task div.icheckbox_minimal-green {
-	float:left;
-}
-
-div.task label {
-	padding-left: 5px;
-	padding-bottom: 10px;
-	float: left;
+ul.tasklist li label {
+	position: absolute;
+	left: 25px;
+	top: 0px;
 }
 
 span.taskdone-true {
