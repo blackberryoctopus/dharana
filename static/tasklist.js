@@ -16,7 +16,7 @@ function TaskListCtrl($scope, $http) {
 
 	$scope.icheck = function(tid) {
 		var taskid = '#task' + tid
-		$(taskid).iCheck({checkboxClass:'icheckbox_minimal-green'})
+		$(taskid).iCheck({checkboxClass:'icheckbox_square'})
 		$(taskid).on('ifChecked', function(e) { $scope.setCompleted($scope, tid, true) })
 		$(taskid).on('ifUnchecked', function(e) { $scope.setCompleted($scope, tid, false) })
 	}

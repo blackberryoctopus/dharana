@@ -3,14 +3,15 @@ ul.tasklist {
 }
 
 ul.tasklist li {
-	line-height: 18px;
+	line-height: 22px;
 	position: relative;
-	padding-bottom: 5px;
+	padding-bottom: 10px;
 }
 
 ul.tasklist li label {
+	line-height: 22px;
 	position: absolute;
-	left: 25px;
+	left: 30px;
 	top: 0px;
 }
 
@@ -22,4 +23,5 @@ span.taskdone-true {
 body {
 	font-family: "Helvetica", sans-serif;
 	font-weight: 100;
+	padding-top: 60px;
 }

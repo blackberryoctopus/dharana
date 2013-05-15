@@ -1,10 +1,32 @@
-<html ng-app>
+<!DOCTYPE html>
+<html ng-app lang="en">
 <head>
-	<link rel="stylesheet" type="text/css" href="static/css/bootstrap.css"/>
-	<link rel="stylesheet" type="text/css" href="static/icheck/skins/minimal/green.css"/>
+	<link rel="stylesheet" type="text/css" href="static/css/bootstrap.min.css"/>
+	<link rel="stylesheet" type="text/css" href="static/icheck/skins/square/square.css"/>
 	<link rel="stylesheet" type="text/css" href="static/tasklist.css"/>
 </head>
 <body ng-controller="TaskListCtrl">
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="brand" href="#">Dharana</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav">
+              <li class="active"><a href="#">Today</a></li>
+              <li><a href="#week">Week</a></li>
+              <li><a href="#faraway">Far Away</a></li>
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
 <div>
 	<h1>Tasks</h1>
 	<ul class="tasklist">
@@ -32,7 +54,7 @@
 		</li>
 	</ul>
 </div>
-
+</div>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
 <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.6/angular.min.js"></script>
 <script src="static/icheck/jquery.icheck.min.js"></script>
