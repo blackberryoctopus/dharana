@@ -73,27 +73,41 @@ asanaRefreshToken = function(req, res, next, oldtok) {
 	tokReq.end(tokReqBody)
 }
 
-asanaGetTasks = function(req, res, next) {
-	taskReqOpts = {
+asanaApiQuery = function(req, res, next) {
+	var asanaReqOpts = {
 		hostname: 'app.asana.com',
-		path: '/api/1.0/projects/4743382492971/tasks?opt_fields=name,created_at,completed,completed_at,due_on',
+		path: req.asanaApiCall,
 		method: 'GET',
 		headers: {
 			'Authorization': "Bearer " + req.asanaTok
 		}
 	}
 
-	taskReq = https.request(taskReqOpts, function(taskRes) {
-		var data = ""
-	
-		taskRes.on('data', function(chunk) { data += chunk })
+	console.log("Making Asana API call: " + JSON.stringify(asanaReqOpts))
 
-		taskRes.on('end', function() {
-			var taskResObj = JSON.parse(data)
-			req.asanaTasks = taskResObj
+	var asanaReq = https.request(asanaReqOpts, function(asanaRes) {
+		var data = ""
+		asanaRes.on('data', function(chunk) { data += chunk })
+		asanaRes.on('end', function() {
+			req.asanaResult = JSON.parse(data)
 			next()
 		})
 	}).end()
+}
+
+asanaGetTasks = function(req, res, next) {
+	req.asanaApiCall = '/api/1.0/projects/4743382492971/tasks?opt_fields=name,created_at,completed,completed_at,modified_at,due_on,assignee_status,notes'
+	next()
+}
+
+asanaGetWorkspaces = function(req, res, next) {
+	req.asanaApiCall = '/api/1.0/workspaces'
+	next()
+}
+
+asanaGetProjects = function(req, res, next) {
+	req.asanaApiCall = '/api/1.0/projects?opt_fields=id,name,workspace'
+	next()
 }
 
 asanaCheckToken = function(req, res, next) {
@@ -166,9 +180,25 @@ app.get('/dharana/auth/',
 app.get('/dharana/asana/tasks',
 	asanaCheckToken,
 	asanaGetTasks,
+	asanaApiQuery,
 	function(req, res) {
-		res.end(JSON.stringify(req.asanaTasks, null, "  "))
+		res.end(JSON.stringify(req.asanaResult, null, "  "))
 	})
 
+app.get('/dharana/asana/workspaces',
+	asanaCheckToken,
+	asanaGetWorkspaces,
+	asanaApiQuery,
+	function(req, res) {
+		res.end(JSON.stringify(req.asanaResult, null, "  "))
+	})
+
+app.get('/dharana/asana/projects',
+	asanaCheckToken,
+	asanaGetProjects,
+	asanaApiQuery,
+	function(req, res) {
+		res.end(JSON.stringify(req.asanaResult, null, "  "))
+	})
 
 app.listen(7000)
