@@ -26,8 +26,8 @@
 				</ul>
 				<ul class="nav pull-right">
 					<li class="dropdown">
-						<a class="dropdown-toggle" data-toggle="dropdown" href="#">
-						Workspaces
+						 <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+						<span id="workspace-name">Workspaces</span>
 						<span class="caret"></span>
 						</a>
 						<ul class="dropdown-menu">
@@ -38,12 +38,12 @@
 					</li>
 					<li class="dropdown">
 						<a class="dropdown-toggle" data-toggle"dropdown" href="#">
-							Projects
+							<span id="project-name">Projects</span>
 							<span class="caret"></span>
 						</a>
 						<ul class="dropdown-menu">
 							<li ng-repeat="pid in projectsInWorkspace">
-								<a href="#">{{projects[pid].name}}</a>
+								<a ng-click="setProject(pid)" href="#">{{projects[pid].name}}</a>
 								{{dropdown()}}
 							</li>
 						</ul>
@@ -61,9 +61,10 @@
 	<ul class="tasklist">
 		<li ng-repeat="tid in taskIdsByCompletion(false)">
 			<input type="checkbox" id="task{{tid}}" ng-model="tasks[tid].completed">
-			<label for="task{{tid}}">
+			<label for="task{{tid}}" id="tasklabel{{tid}}">
 				<span class="taskdone-{{tasks[tid].completed}}">{{tasks[tid].name}}</span>
 				{{icheck(tid)}}
+				{{taskDetailPopover(tid)}}
 			</label>
 		</li>
 	</ul>
@@ -74,9 +75,10 @@
 	<ul class="tasklist">
 		<li ng-repeat="tid in taskIdsByCompletion(true)">
 			<input type="checkbox" id="task{{tid}}" ng-model="tasks[tid].completed">
-			<label for="task{{tid}}">
+			<label for="task{{tid}}" id="tasklabel{{tid}}">
 				<span class="taskdone-{{tasks[tid].completed}}">{{tasks[tid].name}}</span>
 				{{icheck(tid)}}
+				{{taskDetailPopover(tid)}}
 			</label>
 		</li>
 	</ul>
