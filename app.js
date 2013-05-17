@@ -100,8 +100,18 @@ asanaGetTasks = function(req, res, next) {
 	next()
 }
 
+asanaGetTaskTags = function(req, res, next) {
+	req.asanaApiCall = '/api/1.0/tasks/' + req.params.task + '/tags'
+	next()
+}
+
 asanaGetWorkspaces = function(req, res, next) {
 	req.asanaApiCall = '/api/1.0/workspaces'
+	next()
+}
+
+asanaGetTasksInWorkspace = function(req, res, next) {
+	req.asanaApiCall = '/api/1.0/projects/' + req.params.project + '/tasks?opt_fields=name,created_at,completed,completed_at,modified_at,due_on,assignee_status,notes'
 	next()
 }
 
@@ -151,6 +161,10 @@ asanaCheckToken = function(req, res, next) {
 	}
 }
 
+outputApiResult = function(req, res) {
+	res.end(JSON.stringify(req.asanaResult))
+}
+
 app.enable('trust proxy')
 app.use(express.cookieParser())
 app.use('/dharana/static', express.static('static'))
@@ -181,24 +195,30 @@ app.get('/dharana/asana/tasks',
 	asanaCheckToken,
 	asanaGetTasks,
 	asanaApiQuery,
-	function(req, res) {
-		res.end(JSON.stringify(req.asanaResult, null, "  "))
-	})
+	outputApiResult)
+
+app.get('/dharana/asana/tasks/:task/tags',
+	asanaCheckToken,
+	asanaGetTaskTags,
+	asanaApiQuery,
+	outputApiResult)
 
 app.get('/dharana/asana/workspaces',
 	asanaCheckToken,
 	asanaGetWorkspaces,
 	asanaApiQuery,
-	function(req, res) {
-		res.end(JSON.stringify(req.asanaResult, null, "  "))
-	})
+	outputApiResult)
+
+app.get('/dharana/asana/projects/:project/tasks',
+	asanaCheckToken,
+	asanaGetTasksInWorkspace,
+	asanaApiQuery,
+	outputApiResult)
 
 app.get('/dharana/asana/projects',
 	asanaCheckToken,
 	asanaGetProjects,
 	asanaApiQuery,
-	function(req, res) {
-		res.end(JSON.stringify(req.asanaResult, null, "  "))
-	})
+	outputApiResult)
 
 app.listen(7000)
