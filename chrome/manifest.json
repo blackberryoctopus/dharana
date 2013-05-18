@@ -1,0 +1,21 @@
+{
+	"name":"Dharana for Chrome",
+	"version": "1.0",
+	"description": "A quick way to track time on Asana tasks",
+
+	"content_security_policy": "script-src 'self' https://ajax.googleapis.com; object-src 'self'",
+
+	"background": {
+		"scripts": ["background.js", "jquery.min.js"],
+		"persistent": false
+	},
+
+	"page_action": {
+		"default_icon": "eye.png",
+		"default_title": "Dharana"
+	},
+
+	"permissions": [ "tabs" ],
+
+	"manifest_version": 2
+}
