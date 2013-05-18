@@ -26,7 +26,7 @@ getTaskState = function(task) {
 			if (starts <= 0) {
 				state = "NOT_STARTED"
 			} else {
-				state = (starts > pauses ? "ACTIVE" : "INACTIVE")
+				state = (starts > pauses ? "ACTIVE" : "HOLD")
 			}
 		})
 	} else {
