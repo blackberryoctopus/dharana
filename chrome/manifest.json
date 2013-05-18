@@ -12,10 +12,11 @@
 
 	"page_action": {
 		"default_icon": "eye.png",
-		"default_title": "Dharana"
+		"default_title": "Dharana",
+		"default_popup": "popup.html"
 	},
 
-	"permissions": [ "tabs" ],
+	"permissions": [ "tabs", "https://app.asana.com/api/v1.0/*" ],
 
 	"manifest_version": 2
 }
