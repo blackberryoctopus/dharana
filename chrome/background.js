@@ -1,5 +1,13 @@
+/*
+States
+STARTING -> NOT_ASANA
+         -> READY -> FETCHING -> AVAILABLE
+*/
+
 var asanaTaskPattern = /^https:\/\/app\.asana\.com\/0\/\d+\/\d+$/
 var dharanaStartPattern = /\[dharana (start|end) (\d+)\]$/
+var activeTasks = {}
+
 var currentTask = null
 var currentTaskId = null
 var currentUser = null
@@ -91,6 +99,8 @@ function checkAsanaTask(tab) {
 			chrome.pageAction.show(tab.id)
 			currentTaskId = taskComponents[1]
 		}
+	} else {
+		currentTask = null
 	}
 }
 
