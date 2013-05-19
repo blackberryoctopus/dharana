@@ -17,10 +17,12 @@ getTaskState = function(task) {
 
 	if (task.task.completed == false) {
 		$.each(task.stories, function(idx, story) {
-			if (/^dharana_start/.test(story.text)) {
-				++starts
-			} else if (/^dharana_end/.test(story.text)) {
-				++pauses
+			if (story.created_by.id == currentUser.id) {
+				if (/\ \[dharana start\]$/.test(story.text)) {
+					++starts
+				} else if (/\ \[dharana end\]$/.test(story.text)) {
+					++pauses
+				}
 			}
 
 			if (starts <= 0) {
@@ -60,6 +62,10 @@ $(window).load(function() {
 
 	$("#pausetask").click(function(evt) {
 		pauseTask()
+	})
+
+	chrome.runtime.sendMessage({msg:"getuser"}, function(user) {
+		currentUser = user
 	})
 
 	console.log("Requesting task data")

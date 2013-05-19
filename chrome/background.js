@@ -1,5 +1,6 @@
 var asanaTaskPattern = /^https:\/\/app\.asana\.com\/0\/\d+\/\d+$/
 var currentTaskId = null
+var currentUser = null
 
 function getTask(taskid, callback) {
 	console.log("Getting task data")
@@ -43,17 +44,24 @@ function checkAsanaTask(tab) {
 chrome.tabs.onActivated.addListener(function(info) { chrome.tabs.get(info.tabId, checkAsanaTask) })
 chrome.tabs.onUpdated.addListener(function(id, info, tab) { checkAsanaTask(tab) })
 
-chrome.runtime.onMessage.addListener(function(msg, sender, resp) {
-	console.log("Got a message: " + JSON.stringify(msg))
-	switch(msg.msg) {
-		case "gettask":
-			getTask(currentTaskId, function(dat) { resp(dat) })
-			return true
-		case "starttask":
-			addStory(msg.data.taskid, "dharana_start", resp)
-			return true
-		case "pausetask":
-			addStory(msg.data.taskid, "dharana_end", resp)
-			return true
-	}
+$.getJSON('https://app.asana.com/api/1.0/users/me', function(data) {
+	currentUser = data.data
+
+	chrome.runtime.onMessage.addListener(function(msg, sender, resp) {
+		console.log("Got a message: " + JSON.stringify(msg))
+		switch(msg.msg) {
+			case "gettask":
+				getTask(currentTaskId, function(dat) { resp(dat) })
+				return true
+			case "getuser":
+				resp(currentUser)
+				return false
+			case "starttask":
+				addStory(msg.data.taskid, "Started work [dharana start]", resp)
+				return true
+			case "pausetask":
+				addStory(msg.data.taskid, "Stopped work [dharana end]", resp)
+				return true
+		}
+	})
 })
