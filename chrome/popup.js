@@ -1,36 +1,35 @@
-startTask = function() {
-	chrome.runtime.sendMessage({msg:"starttask",data:{taskid:currentTask.task.id}}, function(resp) {
-		setTaskStateUI("ACTIVE")
+var currentTask = {}
+
+dlog = function(msg) {
+	console.log("[dharana-pop-page] " + msg)
+}
+
+startTask = function(task) {
+	dlog("Starting task " + task.id)
+	chrome.runtime.sendMessage({msg:"starttask",data:{taskid:task.id}}, function(updatedTask) {
+		dlog("Task successfully started " + JSON.stringify(updatedTask))
+		setCurrentTask(updatedTask)
 	})
 }
 
-pauseTask = function() {
-	chrome.runtime.sendMessage({msg:"pausetask",data:{taskid:currentTask.task.id}}, function(resp) {
-		setTaskStateUI("HOLD")
+pauseTask = function(task) {
+	dlog("Pausing task " + task.id)
+	chrome.runtime.sendMessage({msg:"pausetask",data:{taskid:task.id, txid:task.lastTxId}}, function(updatedTask) {
+		dlog("Task successfully paused " + JSON.stringify(updatedTask))
+		setCurrentTask(updatedTask)
 	})
 }
 
 getTaskState = function(task) {
 	var state = "UNKNOWN" // -> NOT_STARTED -> ACTIVE -> HOLD -> COMPLETED
-	var starts = 0
-	var pauses = 0
+	var incompletes = 0
 
-	if (task.task.completed == false) {
-		$.each(task.stories, function(idx, story) {
-			if (story.created_by.id == currentUser.id) {
-				if (/\ \[dharana start\]$/.test(story.text)) {
-					++starts
-				} else if (/\ \[dharana end\]$/.test(story.text)) {
-					++pauses
-				}
-			}
-
-			if (starts <= 0) {
-				state = "NOT_STARTED"
-			} else {
-				state = (starts > pauses ? "ACTIVE" : "HOLD")
-			}
-		})
+	if (task.completed == false) {
+		if ($.isEmptyObject(task.starts)) {
+			state = "NOT_STARTED"
+		} else {
+			state = (task.starts[task.lastTxId].end == undefined ? "ACTIVE" : "HOLD")
+		}
 	} else {
 		state = "COMPLETED"
 	}
@@ -40,37 +39,38 @@ getTaskState = function(task) {
 
 setTaskStateUI = function(state) {
 	if (state == "NOT_STARTED" || state == "HOLD") {
-		$("#starttask").css('display', 'block')
-		$("#pausetask").css('display', 'none')
-		$("#taskcomplete").css('display', 'none')
+		$("div#start").css('display', 'block')
+		$("div#pause").css('display', 'none')
+		$("div#taskcomplete").css('display', 'none')
 	} else if (state == "ACTIVE") {
-		$("#starttask").css('display', 'none')
-		$("#pausetask").css('display', 'block')
-		$("#taskcomplete").css('display', 'none')
+		$("div#start").css('display', 'none')
+		$("div#pause").css('display', 'block')
+		$("div#taskcomplete").css('display', 'none')
 	} else if (state == "COMPLETED") {
-		$("#starttask").css('display', 'none')
-		$("#pausetask").css('display', 'none')
-		$("#taskcomplete").css('display', 'block')
+		$("div#start").css('display', 'none')
+		$("div#pause").css('display', 'none')
+		$("div#taskcomplete").css('display', 'block')
 	}
+}
+
+setCurrentTask = function(task) {
+	currentTask = task
+	setTaskStateUI(getTaskState(currentTask))
 }
 
 $(window).load(function() {
 	// Setup handlers
-	$("#starttask").click(function(evt) {
-		startTask()
+	$("#start").click(function(evt) {
+		startTask(currentTask)
 	})
 
-	$("#pausetask").click(function(evt) {
-		pauseTask()
+	$("#pause").click(function(evt) {
+		pauseTask(currentTask)
 	})
 
-	chrome.runtime.sendMessage({msg:"getuser"}, function(user) {
-		currentUser = user
-	})
-
-	console.log("Requesting task data")
-	chrome.runtime.sendMessage({msg:"gettask"}, function(task) {	
-		currentTask = task
-		setTaskStateUI(getTaskState(task))
+	dlog("Requesting task data")
+	chrome.runtime.sendMessage({msg:"gettask"}, function(task) {
+		dlog("Got task data " + JSON.stringify(task))
+		setCurrentTask(task)
 	})
 })

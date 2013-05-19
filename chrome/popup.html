@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html style="width:360px">
+<html style="width:300px">
 <head>
 <script src="jquery.min.js"></script>
 
@@ -10,8 +10,14 @@
 <body>
 <div style="padding:5px">
 	<div class="container">
-		<button id="starttask" class="startstop btn btn-success">Start Task</button>
-		<button id="pausetask" class="startstop btn btn-warning">Pause Task</button>
+		<div id="start" class="startstop">
+			<button id="start" class="btn btn-success btn-block">Start Task</button>
+		</div>
+
+		<div id="pause" class="startstop">
+			<button id="pause" class="btn btn-warning btn-block">Pause Task</button>
+		</div>
+
 		<div id="taskcomplete" class="startstop alert alert-success"><strong>Badhaai ho!</strong> This task is already completed.</div>
 	</div>
 </div>
