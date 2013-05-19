@@ -22,17 +22,18 @@ Dharana.Quicktime = {
 		if (e.keyCode === 17) {
 			self._tab_down_time = new Date().getTime()
 		} else if (e.keyCode === 83) {
-			if (new Date().getTime() < self._tab_down_time + 1000) { // Tab+s 
-				self._tab_down_time = 0
-				/*
-				chrome.runtime.sendMessage(Dharana.EXTENSIONID, {type:Dharana.MSG_QT_TOGGLE, url:window.location.href}, function(task, state) {
-					Dharana.dlog('Task ID ' + task.id + ' now ' + state)
-				})
-				*/
+			if (new Date().getTime() < self._tab_down_time + 1000) {
+				// On Tab+S, check that we are on a specific task
 
-				self.toggleVisibility()
-				e.preventDefault()
-				return false
+				var matches = /^https:\/\/app\.asana\.com\/0\/([0-9]+)\/([0-9]+)/.exec(window.location.href)
+				if (matches && matches.length == 3 && matches[1] != matches[2]) {
+					self._tab_down_time = 0
+					self.toggleVisibility()
+					e.preventDefault()
+					return false
+				} else {
+					Dharana.dlog('Tab+S invoked but not on a task')
+				}
 			}
 		}
 	},
@@ -60,7 +61,7 @@ Dharana.Quicktime = {
 	},
 
 	listen: function() {
-		if (/^https:\/\/app\.asana\.com/.test(window.location.href)) {
+		if (/^https:\/\/app\.asana\.com\//.test(window.location.href)) {
 			Dharana.dlog('Setting up notification element')
 			Dharana.Quicktime.setup()
 			Dharana.dlog('Listening for quicktime hotkey on ' + window.location.href)
