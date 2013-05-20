@@ -30,7 +30,7 @@ Dharana.Quicktime = {
 			Dharana.Quicktime._autohide_timer = setTimeout(function() {
 				Dharana.dlog('Auto-hiding notification box')
 				Dharana.Quicktime.setVisibility(false)
-			}, 10000)
+			}, 3000)
 		}
 	},
 
