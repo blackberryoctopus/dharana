@@ -86,18 +86,6 @@ function pauseAsanaTask(task, txid, callback) {
 	})
 }
 
-function checkAsanaTask(tab) {
-	if (asanaTaskPattern.test(tab.url)) {
-		var taskComponents = tab.url.substr(24).split('/')
-		if (taskComponents[0] != taskComponents[1]) {
-			currentTaskId = taskComponents[1]
-			getTask(taskComponents[1], null)
-		}
-	} else {
-		currentTask = null
-	}
-}
-
 function toggleTask(taskurl, callback) {
 	var taskUrlComponents = asanaTaskPattern.exec(taskurl)
 	if (taskUrlComponents && taskUrlComponents.length == 3 && taskUrlComponents[1] != taskUrlComponents[2]) {
@@ -127,10 +115,10 @@ function toggleTask(taskurl, callback) {
 	}
 }
 
-//chrome.tabs.onActivated.addListener(function(info) { chrome.tabs.get(info.tabId, checkAsanaTask) })
-//chrome.tabs.onUpdated.addListener(function(id, info, tab) { checkAsanaTask(tab) })
-
 Dharana.LOGNAME = 'dharana-bg'
+
+// Fetch user data and start listening for
+// messages from the browser UI components
 
 Dharana.dlog("Fetching user data")
 $.getJSON('https://app.asana.com/api/1.0/users/me', function(data) {

@@ -47,10 +47,24 @@ Dharana.Quicktime = {
 				if (matches && matches.length == 3 && matches[1] != matches[2]) {
 					self._tab_down_time = 0
 
+					// Ask the backend to toggle state on the currently
+					// displayed task. Use the state/action code in the
+					// backend's response to determine notification
+
 					chrome.runtime.sendMessage({msg:Dharana.MSG_QT_TOGGLE, data:window.location.href},
 						function(response) {
 							Dharana.dlog('Got response from background ' + JSON.stringify(response))
-							Dharana.Quicktime._notification_message.textContent = JSON.stringify(response)
+							var notification = ""
+							switch(response.action) {
+								case 'started':
+									notification = 'Started/resumed work on task'
+									break
+								case 'paused':
+									notification = 'Paused work on task'
+									break
+							}
+
+							Dharana.Quicktime._notification_message.textContent = notification
 							self.toggleVisibility()
 						})
 
