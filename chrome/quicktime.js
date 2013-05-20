@@ -1,8 +1,9 @@
 Dharana.Quicktime = {
 	_tab_down_time: 0,
-	_is_visibile: false,
+	_is_visible: false,
 	_notification_element: null,
 	_last_href: "",
+	_autohide_timer: null,
 
 	NOTIFICATION_ELEMENT_ID: 'dharana-notification',
 	NOTIFICATION_MSG_ID: 'dharana-notification-mesage',
@@ -23,6 +24,14 @@ Dharana.Quicktime = {
 
 	toggleVisibility: function() {
 		Dharana.Quicktime.setVisibility(!Dharana.Quicktime._is_visible)
+
+		// Hide the notification panel after 3s if we showed it
+		if (Dharana.Quicktime._is_visible) {
+			Dharana.Quicktime._autohide_timer = setTimeout(function() {
+				Dharana.dlog('Auto-hiding notification box')
+				Dharana.Quicktime.setVisibility(false)
+			}, 10000)
+		}
 	},
 
 	keyDown: function(e) {
@@ -56,6 +65,8 @@ Dharana.Quicktime = {
 	setup: function() {
 		self = Dharana.Quicktime
 
+		// Setup notification box
+
 		var elem = document.createElement('div')
 		elem.id = self.NOTIFICATION_ELEMENT_ID
 
@@ -67,9 +78,22 @@ Dharana.Quicktime = {
 		Dharana.Quicktime._notification_element = elem
 		document.body.appendChild(self._notification_element)
 
+		// Setup location change tracking so we can tell
+		// when user switches to another task
+
 		Dharana.Quicktime._last_href = window.location.href
 		setInterval(function() {
+			// Make sure to clear auto-hide timer if clearing 
+			// notification on task change. Otherwise, the
+			// auto-hide timer could hide a new notification
+
 			if (window.location.href != Dharana.Quicktime._last_href) {
+
+				if (Dharana.Quicktime._autohide_timer != null) {
+					clearTimeout(Dharana.Quicktime._autohide_timer)
+					Dharana.Quicktime._autohide_timer = null
+				}
+
 				Dharana.dlog('Detected task change, hiding notifications: ' + window.location.href + " / " + Dharana.Quicktime._last_href)
 				Dharana.Quicktime._last_href = window.location.href
 				Dharana.Quicktime.setVisibility(false)
