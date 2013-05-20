@@ -2,19 +2,27 @@ Dharana.Quicktime = {
 	_tab_down_time: 0,
 	_is_visibile: false,
 	_notification_element: null,
+	_last_href: "",
+
 	NOTIFICATION_ELEMENT_ID: 'dharana-notification',
 	NOTIFICATION_MSG_ID: 'dharana-notification-mesage',
 
-	toggleVisibility: function() {
-		if (Dharana.Quicktime._is_visible) {
-			Dharana.dlog('Toggling from visible -> invisible')
-			Dharana.Quicktime._notification_element.style.visibility = 'hidden'
-		} else {
-			Dharana.dlog('Toggling from invisible -> visible')
-			Dharana.Quicktime._notification_element.style.visibility = 'visible'
-		}
+	setVisibility: function(visible) {
+		if (Dharana.Quicktime._is_visible != visible) {
+			if (visible) {
+				Dharana.dlog('Setting notification box to visible')
+				Dharana.Quicktime._notification_element.style.visibility = 'visible'
+			} else {
+				Dharana.dlog('Setting notification box to hidden')
+				Dharana.Quicktime._notification_element.style.visibility = 'hidden'
+			}
 
-		Dharana.Quicktime._is_visible = !Dharana.Quicktime._is_visible
+			Dharana.Quicktime._is_visible = visible
+		}
+	},
+
+	toggleVisibility: function() {
+		Dharana.Quicktime.setVisibility(!Dharana.Quicktime._is_visible)
 	},
 
 	keyDown: function(e) {
@@ -58,16 +66,23 @@ Dharana.Quicktime = {
 		
 		Dharana.Quicktime._notification_element = elem
 		document.body.appendChild(self._notification_element)
+
+		Dharana.Quicktime._last_href = window.location.href
+		setInterval(function() {
+			if (window.location.href != Dharana.Quicktime._last_href) {
+				Dharana.dlog('Detected task change, hiding notifications: ' + window.location.href + " / " + Dharana.Quicktime._last_href)
+				Dharana.Quicktime._last_href = window.location.href
+				Dharana.Quicktime.setVisibility(false)
+			}
+		}, 250)
 	},
 
 	listen: function() {
-		if (/^https:\/\/app\.asana\.com\//.test(window.location.href)) {
-			Dharana.dlog('Setting up notification element')
-			Dharana.Quicktime.setup()
-			Dharana.dlog('Listening for quicktime hotkey on ' + window.location.href)
-			window.addEventListener('keydown', Dharana.Quicktime.keyDown, true)
-			window.addEventListener('keyup', Dharana.Quicktime.keyUp, true)
-		}
+		Dharana.dlog('Setting up notification element')
+		Dharana.Quicktime.setup()
+		Dharana.dlog('Listening for quicktime hotkey on ' + window.location.href)
+		window.addEventListener('keydown', Dharana.Quicktime.keyDown, true)
+		window.addEventListener('keyup', Dharana.Quicktime.keyUp, true)
 	}
 }
 
