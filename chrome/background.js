@@ -12,24 +12,19 @@ var currentTask = null
 var currentTaskId = null
 var currentUser = null
 
-function dlog(msg) {
-	console.log("[dharana-bg] " + msg)
-}
-
 function getTask(taskid, callback) {
-	dlog("Fetching data for task ID " + taskid)
+	Dharana.dlog("Fetching data for task ID " + taskid)
 	// Get main task data
 	$.getJSON('https://app.asana.com/api/1.0/tasks/' + taskid, function(data) {
 		currentTask = {id:data.data.id, completed:data.data.completed, completed_at:data.data.completed_at}
 		currentTask.starts = {}
 
-		dlog("Fetching stories for task ID " + taskid)
+		Dharana.dlog("Fetching stories for task ID " + taskid)
 		// Get task stories
 		$.getJSON('https://app.asana.com/api/1.0/tasks/' + taskid + '/stories', function(data) {
 			var lastTxId = -1
 
 			$.each(data.data, function(idx,story) {
-				dlog("Processing story " + JSON.stringify(story))
 				if (story.created_by.id == currentUser.id) {
 					var matches = dharanaStartPattern.exec(story.text)
 					if (matches && matches.length == 3) {
@@ -57,7 +52,6 @@ function getTask(taskid, callback) {
 				currentTask.starts[lastTxId].end = currentTask.completed_at
 			}
 
-			console.log("Calling callback: " + JSON.stringify(currentTask))
 			callback(currentTask)
 		})
 	})
@@ -75,20 +69,20 @@ function addStory(taskid, storyText, callback) {
 function startAsanaTask(task, callback) {
 	var txid = (new Date()).getTime()
 	addStory(task.id, "Started work [dharana start " + txid + "]", function(asanaResp) {
-		dlog("Task start logged with txid " + txid)
+		Dharana.dlog("Task start logged with txid " + txid)
 		currentTask.lastTxId = txid
 		currentTask.starts[txid] = {start:(new Date(asanaResp.data.created_at)).getTime()}
 		callback(currentTask)
-		dlog("Current task now " + JSON.stringify(currentTask))
+		Dharana.dlog("Current task now " + JSON.stringify(currentTask))
 	})
 }
 
 function pauseAsanaTask(task, txid, callback) {
 	addStory(task.id, "Paused work [dharana end " + txid + "]", function(asanaResp) {
-		dlog("Task pause logged")
+		Dharana.dlog("Task pause logged")
 		currentTask.starts[txid].end = (new Date(asanaResp.data.created_at)).getTime()
 		callback(currentTask)
-		dlog("Current task now " + JSON.stringify(currentTask))
+		Dharana.dlog("Current task now " + JSON.stringify(currentTask))
 	})
 }
 
@@ -136,26 +130,16 @@ function toggleTask(taskurl, callback) {
 //chrome.tabs.onActivated.addListener(function(info) { chrome.tabs.get(info.tabId, checkAsanaTask) })
 //chrome.tabs.onUpdated.addListener(function(id, info, tab) { checkAsanaTask(tab) })
 
-dlog("Fetching user data")
+Dharana.LOGNAME = 'dharana-bg'
+
+Dharana.dlog("Fetching user data")
 $.getJSON('https://app.asana.com/api/1.0/users/me', function(data) {
 	currentUser = data.data
-	dlog("Current user is " + JSON.stringify(currentUser))
+	Dharana.dlog("Current user is " + JSON.stringify(currentUser))
 
 	chrome.runtime.onMessage.addListener(function(msg, sender, resp) {
-		dlog("Got a message: " + JSON.stringify(msg))
+		Dharana.dlog("Got a message: " + JSON.stringify(msg))
 		switch(msg.msg) {
-			case "gettask":
-				getTask(currentTaskId, resp)
-				return true
-			case "getuser":
-				resp(currentUser)
-				return false
-			case "starttask":
-				startAsanaTask(currentTask, resp)
-				return true
-			case "pausetask":
-				pauseAsanaTask(currentTask, msg.data.txid, resp)
-				return true
 			case Dharana.MSG_QT_TOGGLE:
 				toggleTask(msg.data, resp)
 				return true
