@@ -3,6 +3,8 @@ Dharana = {
 	LOGNAME: 'dharana-unknown',
 
 	MSG_QT_TOGGLE: 'dharana.quicktime.toggle',
+
+	ERR_NOTASK: 'dharana.quicktime.notask',
 	
 	dlog: function(str) {
 		self = Dharana

@@ -4,7 +4,7 @@ STARTING -> NOT_ASANA
          -> READY -> FETCHING -> AVAILABLE
 */
 
-var asanaTaskPattern = /^https:\/\/app\.asana\.com\/0\/\d+\/\d+$/
+var asanaTaskPattern = /^https:\/\/app\.asana\.com\/0\/([0-9]+)\/([0-9]+)$/
 var dharanaStartPattern = /\[dharana (start|end) (\d+)\]$/
 var activeTasks = {}
 
@@ -96,16 +96,45 @@ function checkAsanaTask(tab) {
 	if (asanaTaskPattern.test(tab.url)) {
 		var taskComponents = tab.url.substr(24).split('/')
 		if (taskComponents[0] != taskComponents[1]) {
-			chrome.pageAction.show(tab.id)
 			currentTaskId = taskComponents[1]
+			getTask(taskComponents[1], null)
 		}
 	} else {
 		currentTask = null
 	}
 }
 
-chrome.tabs.onActivated.addListener(function(info) { chrome.tabs.get(info.tabId, checkAsanaTask) })
-chrome.tabs.onUpdated.addListener(function(id, info, tab) { checkAsanaTask(tab) })
+function toggleTask(taskurl, callback) {
+	var taskUrlComponents = asanaTaskPattern.exec(taskurl)
+	if (taskUrlComponents && taskUrlComponents.length == 3 && taskUrlComponents[1] != taskUrlComponents[2]) {
+		var taskid = taskUrlComponents[2]
+		if (activeTasks[taskid] != undefined) {
+			var task = activeTasks[taskid]
+			if ($.isEmptyObject(task.starts) || task.starts[task.lastTxId].end != undefined) {
+				// No starts or last start closed
+				Dharana.dlog('Starting task')
+				startAsanaTask(task, function(updatedTask) {
+					callback({id: updatedTask.id, action: "started"})
+				})
+			} else {
+				// Have starts and last start open, so need to pause
+				Dharana.dlog('Pausing task with txid ' + task.lastTxId)
+				pauseAsanaTask(task, task.lastTxId, function(updatedTask) {
+					callback({id: updatedTask.id, action: "paused"})
+				})
+			}
+		} else {
+			Dharana.dlog('Fetching task data')
+			getTask(taskid, function(task) {
+				activeTasks[taskid] = task
+				toggleTask(taskurl, callback)
+			})
+		}
+	}
+}
+
+//chrome.tabs.onActivated.addListener(function(info) { chrome.tabs.get(info.tabId, checkAsanaTask) })
+//chrome.tabs.onUpdated.addListener(function(id, info, tab) { checkAsanaTask(tab) })
 
 dlog("Fetching user data")
 $.getJSON('https://app.asana.com/api/1.0/users/me', function(data) {
@@ -126,6 +155,9 @@ $.getJSON('https://app.asana.com/api/1.0/users/me', function(data) {
 				return true
 			case "pausetask":
 				pauseAsanaTask(currentTask, msg.data.txid, resp)
+				return true
+			case Dharana.MSG_QT_TOGGLE:
+				toggleTask(msg.data, resp)
 				return true
 		}
 	})

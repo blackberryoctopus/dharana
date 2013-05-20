@@ -2,6 +2,7 @@ Dharana.Quicktime = {
 	_tab_down_time: 0,
 	_is_visible: false,
 	_notification_element: null,
+	_notification_message: null,
 	_last_href: "",
 	_autohide_timer: null,
 
@@ -45,7 +46,14 @@ Dharana.Quicktime = {
 				var matches = /^https:\/\/app\.asana\.com\/0\/([0-9]+)\/([0-9]+)/.exec(window.location.href)
 				if (matches && matches.length == 3 && matches[1] != matches[2]) {
 					self._tab_down_time = 0
-					self.toggleVisibility()
+
+					chrome.runtime.sendMessage({msg:Dharana.MSG_QT_TOGGLE, data:window.location.href},
+						function(response) {
+							Dharana.dlog('Got response from background ' + JSON.stringify(response))
+							Dharana.Quicktime._notification_message.textContent = JSON.stringify(response)
+							self.toggleVisibility()
+						})
+
 					e.preventDefault()
 					return false
 				} else {
@@ -74,9 +82,11 @@ Dharana.Quicktime = {
 		msgElem.id = self.NOTIFICATION_MSG_ID
 		msgElem.textContent = 'Hello, World!'
 		elem.appendChild(msgElem)
-		
+
 		Dharana.Quicktime._notification_element = elem
-		document.body.appendChild(self._notification_element)
+		Dharana.Quicktime._notification_message = msgElem
+
+		document.body.appendChild(Dharana.Quicktime._notification_element)
 
 		// Setup location change tracking so we can tell
 		// when user switches to another task
