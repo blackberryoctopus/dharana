@@ -18,7 +18,7 @@
 
 	"content_scripts": [
 		{
-			"matches": ["https://app.asana.com/0/*/*"],
+			"matches": ["https://app.asana.com/*"],
 			"css": ["quicktime.css"],
 			"js": ["dharana.js", "quicktime.js"],
 			"run_at": "document_end"
