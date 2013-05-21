@@ -7,6 +7,7 @@ STARTING -> NOT_ASANA
 var asanaTaskPattern = /^https:\/\/app\.asana\.com\/0\/([0-9]+)\/([0-9]+)$/
 var dharanaStartPattern = /\[dharana (start|end) (\d+)\]$/
 var activeTasks = {}
+var lastStartedTask = {id:null, title:""}
 
 var currentTask = null
 var currentTaskId = null
@@ -72,6 +73,7 @@ function startAsanaTask(task, callback) {
 		Dharana.dlog("Task start logged with txid " + txid)
 		currentTask.lastTxId = txid
 		currentTask.starts[txid] = {start:(new Date(asanaResp.data.created_at)).getTime()}
+
 		callback(currentTask)
 		Dharana.dlog("Current task now " + JSON.stringify(currentTask))
 	})
@@ -101,12 +103,22 @@ function toggleTask(taskurl, callback) {
 	var taskUrlComponents = asanaTaskPattern.exec(taskurl)
 	if (taskUrlComponents && taskUrlComponents.length == 3 && taskUrlComponents[1] != taskUrlComponents[2]) {
 		var taskid = taskUrlComponents[2]
+
+		// Check our task cache first
+		// If task is not in cache, then refetch it and try again
+		// (via recursive call)
+
 		if (activeTasks[taskid] != undefined) {
 			var task = activeTasks[taskid]
 			if ($.isEmptyObject(task.starts) || task.starts[task.lastTxId].end != undefined) {
 				// No starts or last start closed
 				Dharana.dlog('Starting task')
 				startAsanaTask(task, function(updatedTask) {
+					lastStartedTask.id = task.id
+					lastStartedTask.title = task.title
+					chrome.browserAction.setBadgeBackgroundColor({color:"#2ECC71"})
+					chrome.browserAction.setBadgeText({text:"A"})
+
 					var time = timeSpent(updatedTask)
 					callback({id: updatedTask.id, action: "started", time:time})
 				})
@@ -114,6 +126,8 @@ function toggleTask(taskurl, callback) {
 				// Have starts and last start open, so need to pause
 				Dharana.dlog('Pausing task with txid ' + task.lastTxId)
 				pauseAsanaTask(task, task.lastTxId, function(updatedTask) {
+					chrome.browserAction.setBadgeText({text:""})
+
 					var pausedStart = task.starts[task.lastTxId]
 					callback({id: updatedTask.id, action: "paused", time:(pausedStart.end - pausedStart.start)})
 				})
