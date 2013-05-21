@@ -86,6 +86,17 @@ function pauseAsanaTask(task, txid, callback) {
 	})
 }
 
+function timeSpent(task) {
+	var time = 0;
+	$.each(task.starts, function(idx, start) {
+		if (start.start != undefined && start.end != undefined) {
+			time += (start.end - start.start)
+		}
+	})
+
+	return time;
+}
+
 function toggleTask(taskurl, callback) {
 	var taskUrlComponents = asanaTaskPattern.exec(taskurl)
 	if (taskUrlComponents && taskUrlComponents.length == 3 && taskUrlComponents[1] != taskUrlComponents[2]) {
@@ -96,13 +107,15 @@ function toggleTask(taskurl, callback) {
 				// No starts or last start closed
 				Dharana.dlog('Starting task')
 				startAsanaTask(task, function(updatedTask) {
-					callback({id: updatedTask.id, action: "started"})
+					var time = timeSpent(updatedTask)
+					callback({id: updatedTask.id, action: "started", time:time})
 				})
 			} else {
 				// Have starts and last start open, so need to pause
 				Dharana.dlog('Pausing task with txid ' + task.lastTxId)
 				pauseAsanaTask(task, task.lastTxId, function(updatedTask) {
-					callback({id: updatedTask.id, action: "paused"})
+					var pausedStart = task.starts[task.lastTxId]
+					callback({id: updatedTask.id, action: "paused", time:(pausedStart.end - pausedStart.start)})
 				})
 			}
 		} else {

@@ -57,10 +57,10 @@ Dharana.Quicktime = {
 							var notification = ""
 							switch(response.action) {
 								case 'started':
-									notification = 'Started/resumed work on task'
+									notification = 'Started/resumed work on task. ' + (response.time)/1000 + 's accumulated so far.'
 									break
 								case 'paused':
-									notification = 'Paused work on task'
+									notification = 'Paused work on task. ' + (response.time)/1000 + 's added.'
 									break
 							}
 
