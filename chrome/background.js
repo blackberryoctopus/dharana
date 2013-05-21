@@ -17,7 +17,7 @@ function getTask(taskid, callback) {
 	Dharana.dlog("Fetching data for task ID " + taskid)
 	// Get main task data
 	$.getJSON('https://app.asana.com/api/1.0/tasks/' + taskid, function(data) {
-		currentTask = {id:data.data.id, completed:data.data.completed, completed_at:data.data.completed_at}
+		currentTask = {id:data.data.id, name:data.data.name, completed:data.data.completed, completed_at:data.data.completed_at}
 		currentTask.starts = {}
 
 		Dharana.dlog("Fetching stories for task ID " + taskid)
@@ -115,7 +115,7 @@ function toggleTask(taskurl, callback) {
 				Dharana.dlog('Starting task')
 				startAsanaTask(task, function(updatedTask) {
 					lastStartedTask.id = task.id
-					lastStartedTask.title = task.title
+					lastStartedTask.title = task.name
 					chrome.browserAction.setBadgeBackgroundColor({color:"#2ECC71"})
 					chrome.browserAction.setBadgeText({text:"A"})
 
@@ -127,6 +127,8 @@ function toggleTask(taskurl, callback) {
 				Dharana.dlog('Pausing task with txid ' + task.lastTxId)
 				pauseAsanaTask(task, task.lastTxId, function(updatedTask) {
 					chrome.browserAction.setBadgeText({text:""})
+					lastStartedTask.id = null
+					lastStartedTask.title = ""
 
 					var pausedStart = task.starts[task.lastTxId]
 					callback({id: updatedTask.id, action: "paused", time:(pausedStart.end - pausedStart.start)})
@@ -142,6 +144,14 @@ function toggleTask(taskurl, callback) {
 	}
 }
 
+function returnLastActiveTask(callback) {
+	var title = (lastStartedTask.id != null ? lastStartedTask.title : "")
+	callback({
+		id: lastStartedTask.id,
+		title: title
+	})
+}
+
 Dharana.LOGNAME = 'dharana-bg'
 
 // Fetch user data and start listening for
@@ -153,11 +163,15 @@ $.getJSON('https://app.asana.com/api/1.0/users/me', function(data) {
 	Dharana.dlog("Current user is " + JSON.stringify(currentUser))
 
 	chrome.runtime.onMessage.addListener(function(msg, sender, resp) {
-		Dharana.dlog("Got a message: " + JSON.stringify(msg))
+		Dharana.dlog("Got a message: " + JSON.stringify(msg || '{msg:"none"}'))
 		switch(msg.msg) {
 			case Dharana.MSG_QT_TOGGLE:
 				toggleTask(msg.data, resp)
 				return true
+			case Dharana.MSG_QT_LASTTASK:
+				Dharana.dlog(JSON.stringify(lastStartedTask))
+				resp(lastStartedTask)
+				return false
 		}
 	})
 })

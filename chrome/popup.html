@@ -10,19 +10,12 @@
 <body>
 <div style="padding:5px">
 	<div class="container">
-		<div id="start" class="startstop">
-			<button id="start" class="btn btn-success btn-block">Start Task</button>
-		</div>
-
-		<div id="pause" class="startstop">
-			<button id="pause" class="btn btn-warning btn-block">Pause Task</button>
-		</div>
-
-		<div id="taskcomplete" class="startstop alert alert-success"><strong>Badhaai ho!</strong> This task is already completed.</div>
+		<div id="taskcomplete" class="alert alert-success"><span id="active_task_title"></span></div>
 	</div>
 </div>
 
 <script src="js/bootstrap.min.js"></script>
+<script src="dharana.js"></script>
 <script src="popup.js"></script>
 </body>
 </html>
