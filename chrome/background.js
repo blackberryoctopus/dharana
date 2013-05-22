@@ -103,6 +103,7 @@ function toggleTask(taskurl, callback) {
 	var taskUrlComponents = asanaTaskPattern.exec(taskurl)
 	if (taskUrlComponents && taskUrlComponents.length == 3 && taskUrlComponents[1] != taskUrlComponents[2]) {
 		var taskid = taskUrlComponents[2]
+		Dharana.dlog('Toggling task ' + taskid + ' for url ' + taskurl)
 
 		// Check our task cache first
 		// If task is not in cache, then refetch it and try again
@@ -118,6 +119,7 @@ function toggleTask(taskurl, callback) {
 					lastStartedTask.title = task.name
 					chrome.browserAction.setBadgeBackgroundColor({color:"#2ECC71"})
 					chrome.browserAction.setBadgeText({text:"A"})
+					Dharana.dlog('lastStartedTask is now ' + JSON.stringify(lastStartedTask))
 
 					var time = timeSpent(updatedTask)
 					callback({id: updatedTask.id, action: "started", time:time})
@@ -129,6 +131,7 @@ function toggleTask(taskurl, callback) {
 					chrome.browserAction.setBadgeText({text:""})
 					lastStartedTask.id = null
 					lastStartedTask.title = ""
+					Dharana.dlog('lastStartedTask is now ' + JSON.stringify(lastStartedTask))
 
 					var pausedStart = task.starts[task.lastTxId]
 					callback({id: updatedTask.id, action: "paused", time:(pausedStart.end - pausedStart.start)})
