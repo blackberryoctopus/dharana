@@ -9,16 +9,14 @@ var dharanaStartPattern = /\[dharana (start|end) (\d+)\]$/
 var activeTasks = {}
 var lastStartedTask = {id:null, title:""}
 
-var currentTask = null
-var currentTaskId = null
 var currentUser = null
 
 function getTask(taskid, callback) {
 	Dharana.dlog("Fetching data for task ID " + taskid)
 	// Get main task data
 	$.getJSON('https://app.asana.com/api/1.0/tasks/' + taskid, function(data) {
-		currentTask = {id:data.data.id, name:data.data.name, completed:data.data.completed, completed_at:data.data.completed_at}
-		currentTask.starts = {}
+		var task = {id:data.data.id, name:data.data.name, completed:data.data.completed, completed_at:data.data.completed_at}
+		task.starts = {}
 
 		Dharana.dlog("Fetching stories for task ID " + taskid)
 		// Get task stories
@@ -33,12 +31,12 @@ function getTask(taskid, callback) {
 						var evtTime = (new Date(story.created_at)).getTime()
 						var txId = matches[2]
 					
-						if (currentTask.starts[txId] != undefined) {
-							currentTask.starts[txId][evt] = evtTime
+						if (task.starts[txId] != undefined) {
+							task.starts[txId][evt] = evtTime
 						} else {
 							var newObj = {}
 							newObj[evt] = evtTime
-							currentTask.starts[txId] = newObj
+							task.starts[txId] = newObj
 						}
 
 						lastTxId = (txId > lastTxId ? txId : lastTxId)
@@ -46,14 +44,14 @@ function getTask(taskid, callback) {
 				}
 			})
 
-			currentTask.lastTxId = lastTxId
+			task.lastTxId = lastTxId
 
 			// If task is completed, automatically "close" last transaction
-			if (currentTask.completed && currentTask.starts[lastTxId].end == undefined) {
-				currentTask.starts[lastTxId].end = currentTask.completed_at
+			if (task.completed && task.starts[lastTxId].end == undefined) {
+				task.starts[lastTxId].end = task.completed_at
 			}
 
-			callback(currentTask)
+			callback(task)
 		})
 	})
 }
@@ -71,20 +69,18 @@ function startAsanaTask(task, callback) {
 	var txid = (new Date()).getTime()
 	addStory(task.id, "Started work [dharana start " + txid + "]", function(asanaResp) {
 		Dharana.dlog("Task start logged with txid " + txid)
-		currentTask.lastTxId = txid
-		currentTask.starts[txid] = {start:(new Date(asanaResp.data.created_at)).getTime()}
+		task.lastTxId = txid
+		task.starts[txid] = {start:(new Date(asanaResp.data.created_at)).getTime()}
 
-		callback(currentTask)
-		Dharana.dlog("Current task now " + JSON.stringify(currentTask))
+		callback(task)
 	})
 }
 
 function pauseAsanaTask(task, txid, callback) {
 	addStory(task.id, "Paused work [dharana end " + txid + "]", function(asanaResp) {
 		Dharana.dlog("Task pause logged")
-		currentTask.starts[txid].end = (new Date(asanaResp.data.created_at)).getTime()
-		callback(currentTask)
-		Dharana.dlog("Current task now " + JSON.stringify(currentTask))
+		task.starts[txid].end = (new Date(asanaResp.data.created_at)).getTime()
+		callback(task)
 	})
 }
 
@@ -111,6 +107,8 @@ function toggleTask(taskurl, callback) {
 
 		if (activeTasks[taskid] != undefined) {
 			var task = activeTasks[taskid]
+			Dharana.dlog('Got task ' + JSON.stringify(task))
+
 			if ($.isEmptyObject(task.starts) || task.starts[task.lastTxId].end != undefined) {
 				// No starts or last start closed
 				Dharana.dlog('Starting task')
