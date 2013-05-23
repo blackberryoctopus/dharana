@@ -35,6 +35,18 @@ Dharana.Quicktime = {
 		}
 	},
 
+	friendlyTime: function(millis) {
+		if (millis <= 90000) {
+			return 'About a minute'
+		} else if (millis > 90000 && millis < 3000000) {
+			return Math.round(millis / 60000) + ' minutes'
+		} else if (millis >= 3000000 && millis < 4200000) {
+			return 'About an hour'
+		} else if (millis >= 4200000) {
+			return (millis / 3600000).toFixed(1) + ' hours'
+		}
+	},
+
 	keyDown: function(e) {
 		var self = Dharana.Quicktime
 		if (e.keyCode === 17) {
@@ -57,10 +69,14 @@ Dharana.Quicktime = {
 							var notification = ""
 							switch(response.action) {
 								case 'started':
-									notification = 'Started/resumed work on task. ' + (response.time)/1000 + 's accumulated so far.'
+									if (response.time <= 0)
+										notification = 'Started work on task.'
+									else
+										notification = 'Resumed work on task. ' + self.friendlyTime(response.time) + ' accumulated so far.'
+
 									break
 								case 'paused':
-									notification = 'Paused work on task. ' + (response.time)/1000 + 's added.'
+									notification = 'Paused work on task. ' + self.friendlyTime(response.time) + ' added.'
 									break
 							}
 
