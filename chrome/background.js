@@ -7,16 +7,22 @@ STARTING -> NOT_ASANA
 var asanaTaskPattern = /^https:\/\/app\.asana\.com\/0\/([0-9]+)\/([0-9]+)$/
 var dharanaStartPattern = /\[dharana (start|end) (\d+)\]$/
 var activeTasks = {}
+var numActiveTasks = 0
 var lastStartedTask = {id:null, title:""}
 
 var currentUser = null
 
-function getTask(taskid, callback) {
+function getTask(taskid, stories, callback) {
 	Dharana.dlog("Fetching data for task ID " + taskid)
 	// Get main task data
 	$.getJSON('https://app.asana.com/api/1.0/tasks/' + taskid, function(data) {
 		var task = {id:data.data.id, name:data.data.name, completed:data.data.completed, completed_at:data.data.completed_at}
 		task.starts = {}
+
+		if (!stories) {
+			callback(task)
+			return
+		}
 
 		Dharana.dlog("Fetching stories for task ID " + taskid)
 		// Get task stories
@@ -95,6 +101,22 @@ function timeSpent(task) {
 	return time;
 }
 
+function addActiveTask(task) {
+	if (activeTasks[task.id] == undefined) {
+		activeTasks[task.id] = task
+		++numActiveTasks
+		chrome.browserAction.setBadgeText({text:numActiveTasks + ''})
+	}
+}
+
+function removeActiveTask(task) {
+	if (activeTasks[task.id] != undefined) {
+		delete activeTasks[task.id]
+		--numActiveTasks
+		chrome.browserAction.setBadgeText({text:(numActiveTasks > 0 ? numActiveTasks : '') + ''})
+	}
+}
+
 function toggleTask(taskurl, callback) {
 	var taskUrlComponents = asanaTaskPattern.exec(taskurl)
 	if (taskUrlComponents && taskUrlComponents.length == 3 && taskUrlComponents[1] != taskUrlComponents[2]) {
@@ -111,12 +133,11 @@ function toggleTask(taskurl, callback) {
 
 			if ($.isEmptyObject(task.starts) || task.starts[task.lastTxId].end != undefined) {
 				// No starts or last start closed
+
 				Dharana.dlog('Starting task')
 				startAsanaTask(task, function(updatedTask) {
 					lastStartedTask.id = task.id
 					lastStartedTask.title = task.name
-					chrome.browserAction.setBadgeBackgroundColor({color:"#2ECC71"})
-					chrome.browserAction.setBadgeText({text:"A"})
 					Dharana.dlog('lastStartedTask is now ' + JSON.stringify(lastStartedTask))
 
 					var time = timeSpent(updatedTask)
@@ -124,9 +145,9 @@ function toggleTask(taskurl, callback) {
 				})
 			} else {
 				// Have starts and last start open, so need to pause
+
 				Dharana.dlog('Pausing task with txid ' + task.lastTxId)
 				pauseAsanaTask(task, task.lastTxId, function(updatedTask) {
-					chrome.browserAction.setBadgeText({text:""})
 					lastStartedTask.id = null
 					lastStartedTask.title = ""
 					Dharana.dlog('lastStartedTask is now ' + JSON.stringify(lastStartedTask))
@@ -137,8 +158,8 @@ function toggleTask(taskurl, callback) {
 			}
 		} else {
 			Dharana.dlog('Fetching task data')
-			getTask(taskid, function(task) {
-				activeTasks[taskid] = task
+			getTask(taskid, true, function(task) {
+				addActiveTask(task)
 				toggleTask(taskurl, callback)
 			})
 		}
@@ -154,6 +175,9 @@ function returnLastActiveTask(callback) {
 }
 
 Dharana.LOGNAME = 'dharana-bg'
+
+// Set badge background color
+chrome.browserAction.setBadgeBackgroundColor({color:"#2ECC71"})
 
 // Fetch user data and start listening for
 // messages from the browser UI components
@@ -176,3 +200,23 @@ $.getJSON('https://app.asana.com/api/1.0/users/me', function(data) {
 		}
 	})
 })
+
+// Setup timer to check status of active tasks
+var checkDoneTimer = setInterval(function() {
+		$.each(activeTasks, function(tid, task) {
+			getTask(tid, false, function(retrievedTask) {
+				if (retrievedTask.completed) {
+					var lastTxId = task.lastTxId
+					if (task.starts[lastTxId].end == undefined) {
+						pauseAsanaTask(task, lastTxId, function() {
+							Dharana.dlog('Tx ' + lastTxId + ' on task ' + tid + ' automatically paused due to completion.')
+							removeActiveTask(task)
+						})
+					} else {
+						Dharana.dlog('Task ' + tid + ' is complete. Removing from active tasks.')
+						removeActiveTask(task)
+					}
+				}
+			})
+		})
+	}, 15000)
