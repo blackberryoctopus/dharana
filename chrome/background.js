@@ -166,6 +166,21 @@ function toggleTask(taskurl, callback) {
 	}
 }
 
+function tasks(callback) {
+	var taskList = {activeTasks:[], startedTasks:[]}
+	$.each(activeTasks, function(tid, task) {
+		if (task.starts[task.lastTxId].end == undefined) {
+			// Task is active
+			taskList.activeTasks.push({id:task.id, name:task.name})
+		} else {
+			// Task is started, but not active
+			taskList.startedTasks.push({id:task.id, name:task.name})
+		}
+	})
+
+	callback(taskList)
+}
+
 Dharana.LOGNAME = 'dharana-bg'
 
 // Set badge background color
@@ -189,6 +204,9 @@ $.getJSON('https://app.asana.com/api/1.0/users/me', function(data) {
 				Dharana.dlog(JSON.stringify(lastStartedTask))
 				resp(lastStartedTask)
 				return false
+			case Dharana.MSG_QT_TASKS:
+				tasks(resp)
+				return true
 		}
 	})
 })

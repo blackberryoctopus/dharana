@@ -3,6 +3,25 @@ body {
 	font-size: 10pt;
 }
 
+ul.tasklist {
+	list-style-type: none;
+	color: #ECF0F1;
+	margin: 0px;
+}
+
+ul.tasklist li {
+	margin: 0px;
+	padding: 7px;
+}
+
+ul.tasklist li.task-active {
+	background-color: #16A085;
+}
+
+ul.tasklist li.task-started {
+	background-color: #E67E22;
+}
+
 .startstop {
 	display:none;
 }
