@@ -166,14 +166,6 @@ function toggleTask(taskurl, callback) {
 	}
 }
 
-function returnLastActiveTask(callback) {
-	var title = (lastStartedTask.id != null ? lastStartedTask.title : "")
-	callback({
-		id: lastStartedTask.id,
-		title: title
-	})
-}
-
 Dharana.LOGNAME = 'dharana-bg'
 
 // Set badge background color
