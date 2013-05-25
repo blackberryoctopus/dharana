@@ -128,6 +128,7 @@ function toggleTask(taskurl, callback) {
 		// (via recursive call)
 
 		if (activeTasks[taskid] != undefined) {
+			activeTasks[taskid].lastUrl = taskurl
 			var task = activeTasks[taskid]
 			Dharana.dlog('Got task ' + JSON.stringify(task))
 
@@ -159,6 +160,7 @@ function toggleTask(taskurl, callback) {
 		} else {
 			Dharana.dlog('Fetching task data')
 			getTask(taskid, true, function(task) {
+				task.lastUrl = taskurl
 				addActiveTask(task)
 				toggleTask(taskurl, callback)
 			})
@@ -166,15 +168,19 @@ function toggleTask(taskurl, callback) {
 	}
 }
 
+function popupTaskRecord(task) {
+	return {id:task.id, name:task.name, link:task.lastUrl}
+}
+
 function tasks(callback) {
 	var taskList = {activeTasks:[], startedTasks:[]}
 	$.each(activeTasks, function(tid, task) {
 		if (task.starts[task.lastTxId].end == undefined) {
 			// Task is active
-			taskList.activeTasks.push({id:task.id, name:task.name})
+			taskList.activeTasks.push(popupTaskRecord(task))
 		} else {
 			// Task is started, but not active
-			taskList.startedTasks.push({id:task.id, name:task.name})
+			taskList.startedTasks.push(popupTaskRecord(task))
 		}
 	})
 
