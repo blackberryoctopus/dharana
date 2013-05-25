@@ -25,6 +25,9 @@ ul.tasklist li.task-started {
 
 ul.tasklist li .taskname {
 	padding-right: 21px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 ul.tasklist li .link {
