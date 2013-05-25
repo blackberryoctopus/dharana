@@ -12,14 +12,20 @@ ul.tasklist {
 ul.tasklist li {
 	margin: 0px;
 	padding: 7px;
+	position: relative;
 }
 
 ul.tasklist li.task-active {
-	background-color: #16A085;
+	background-color: #3498DB;
 }
 
 ul.tasklist li.task-started {
-	background-color: #E67E22;
+	background-color: #F39C12;
+}
+
+ul.tasklist li .link {
+	position: absolute;
+	right: 7px;
 }
 
 .startstop {
