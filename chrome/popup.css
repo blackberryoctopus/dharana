@@ -23,8 +23,13 @@ ul.tasklist li.task-started {
 	background-color: #F39C12;
 }
 
+ul.tasklist li .taskname {
+	padding-right: 21px;
+}
+
 ul.tasklist li .link {
 	position: absolute;
+	top: 7px;
 	right: 7px;
 }
 

@@ -15,7 +15,7 @@ function createTaskListItem(task, taskState) {
 		class: taskClass
 	})
 
-	var taskNameSpan = $('<span>', {text: task.name}).appendTo(taskListItem)
+	var taskNameSpan = $('<div>', {class: 'taskname', text: task.name}).appendTo(taskListItem)
 	var taskLinkSpan = $('<span>', {
 		class: 'link'
 	})
