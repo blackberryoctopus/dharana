@@ -15,13 +15,24 @@ function createTaskListItem(task, taskState) {
 		class: taskClass
 	})
 
+	taskListItem.hover(
+		function(evt) {
+			Dharana.dlog('hover in on task ' + task.id)
+			$('ul#tasks > li > span#' + task.id).css('visibility', 'visible')
+		},
+		function(evt) {
+			Dharana.dlog('hover out on task ' + task.id)
+			$('ul#tasks > li > span#' + task.id).css('visibility', 'hidden')
+		})
+
 	var taskNameSpan = $('<div>', {class: 'taskname', text: task.name}).appendTo(taskListItem)
 	var taskLinkSpan = $('<span>', {
-		class: 'link'
+		class: 'link',
+		id: task.id
 	})
 
 	var taskLinkIcon = $('<i>', {class: 'icon-chevron-right icon-white'}).appendTo(taskLinkSpan)
-	taskLinkIcon.on('click', function(e) {
+	taskLinkIcon.click(function(evt) {
 		chrome.tabs.query({active:true, currentWindow:true}, function(tabs) {
 			if (tabs.length > 0) {
 				chrome.tabs.update(tabs[0].id, {url: task.link})

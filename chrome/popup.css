@@ -31,6 +31,7 @@ ul.tasklist li .link {
 	position: absolute;
 	top: 7px;
 	right: 7px;
+	visibility: hidden;
 }
 
 .startstop {
