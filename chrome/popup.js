@@ -66,23 +66,36 @@ function populateTaskLists() {
 	})
 }
 
-function setActivityMeter() {
+function setupActivityMeter() {
 	Dharana.dlog("Requesting time fragmentation data")
 	chrome.runtime.sendMessage({msg:Dharana.MSG_QT_FRAGMENTATION}, function(timeFragData) {
 		Dharana.dlog('Got time fragmentation data: ' + JSON.stringify(timeFragData))
-			if (timeFragData.active > 0) {
-				var activePercentage = timeFragData.active / timeFragData.total * 100.0 + '%'
-				$("#meter-active").css('width', activePercentage)
-				$("#meter-text").text(Dharana.friendlyTime(timeFragData.active))
-				$("#meter").css('display', 'block')
-			} else {
-				$("#meter").css('display', 'none')
-			}
+
+		var displayedPct = timeFragData.active / timeFragData.total * 100.0 + '%'
+		var hoverPct = timeFragData.active / timeFragData.logged * 100.0 + '%'
+
+		$("#meter").hover(
+			function(inevt) {
+				$("#meter-active").css('width', hoverPct)
+				$("#meter-active").css('background-color', '#C0392B')
+			},
+			function(outevt) {
+				$("#meter-active").css('width', displayedPct)
+				$("#meter-active").css('background-color', '#8E44AD')
+			})
+
+		if (timeFragData.active > 0) {
+			$("#meter-active").css('width', displayedPct)
+			$("#meter-text").text(Dharana.friendlyTime(timeFragData.active))
+			$("#meter").css('display', 'block')
+		} else {
+			$("#meter").css('display', 'none')
+		}
 	})
 }
 
 $(window).load(function() {
 	Dharana.LOGNAME = 'dharana-popup'
 	populateTaskLists()
-	setActivityMeter()
+	setupActivityMeter()
 })

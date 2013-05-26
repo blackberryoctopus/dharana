@@ -113,16 +113,25 @@ function timeFragmentInfo(callback) {
 		})
 	})
 
+	var now = Date.now()
 	var firstStart = Number.MAX_VALUE
+	var lastEnd = 0
 	var activeTime = 0
 	$.each(fragments, function(idx, fragment) {
 		firstStart = fragment.start < firstStart ? fragment.start : firstStart
-		activeTime += (fragment.end || Date.now()) - fragment.start
+		if (fragment.end) {
+			lastEnd = fragment.end > lastEnd ? fragment.end : lastEnd
+		} else {
+			lastEnd = now
+		}
+
+		activeTime += (fragment.end || now) - fragment.start
 		Dharana.dlog('Adding fragment ' + JSON.stringify(fragment) + ' activeTime now ' + activeTime)
 	})
 	
-	var totalTime = Date.now() - firstStart
-	callback({total:totalTime, active:activeTime})
+	var totalTime = now - firstStart
+	var loggedTime = lastEnd - firstStart
+	callback({total:totalTime, logged:loggedTime, active:activeTime})
 }
 
 function pauseAsanaTask(task, txid, callback) {
