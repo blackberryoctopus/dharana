@@ -12,7 +12,8 @@ function createTaskListItem(task, taskState) {
 	}
 
 	var taskListItem = $('<li>', {
-		class: taskClass
+		class: taskClass,
+		title: task.name
 	})
 
 	taskListItem.hover(
