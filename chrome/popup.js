@@ -48,17 +48,25 @@ function createTaskListItem(task, taskState) {
 	return taskListItem
 }
 
-$(window).load(function() {
-	Dharana.LOGNAME = 'dharana-popup'
+function populateTaskLists() {
 	Dharana.dlog("Requesting task data")
 	chrome.runtime.sendMessage({msg:Dharana.MSG_QT_TASKS}, function(taskList) {
 		Dharana.dlog('Got task list: ' + JSON.stringify(taskList))
-		$.each(taskList.activeTasks, function(idx, task) {
-			createTaskListItem(task, "active").appendTo('#tasks')
-		})
+		if (taskList.activeTasks.length > 0 || taskList.startedTasks.length > 0) {
+			$.each(taskList.activeTasks, function(idx, task) {
+				createTaskListItem(task, "active").appendTo('#tasks')
+			})
 
-		$.each(taskList.startedTasks, function(idx, task) {
-			createTaskListItem(task, "started").appendTo('#tasks')
-		})
+			$.each(taskList.startedTasks, function(idx, task) {
+				createTaskListItem(task, "started").appendTo('#tasks')
+			})
+		} else {
+			$("#no-items").css('display', 'block')
+		}
 	})
+}
+
+$(window).load(function() {
+	Dharana.LOGNAME = 'dharana-popup'
+	populateTaskLists()
 })
