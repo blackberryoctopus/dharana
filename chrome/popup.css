@@ -3,6 +3,10 @@ body {
 	font-size: 10pt;
 }
 
+#no-items {
+	display: none;
+}
+
 ul.tasklist {
 	list-style-type: none;
 	color: #ECF0F1;
