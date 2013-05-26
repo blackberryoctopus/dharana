@@ -41,6 +41,35 @@ ul.tasklist li .link {
 	visibility: hidden;
 }
 
+div.meterwrapper {
+	height: 24px;
+	width: 100%;
+	border: 0px;
+	padding: 0px;
+	margin-top: 14px;
+	background-color: #8E44AD;
+	display: none;
+}
+
+div.meterwrapper #meter-active {
+	position: relative;
+	top: 0px;
+	left: 0px;
+	width: 0%;
+	height: 100%;
+	background-color: #9B59B6;
+}
+
+div.meterwrapper #meter-text {
+	position: relative;
+	line-height: 24px;
+	width: 100%;
+	top: -24px;
+	background-color: transparent;
+	color: #ECF0F1;
+	text-align: center;
+}
+
 .startstop {
 	display:none;
 }

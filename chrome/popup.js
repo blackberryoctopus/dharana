@@ -66,7 +66,23 @@ function populateTaskLists() {
 	})
 }
 
+function setActivityMeter() {
+	Dharana.dlog("Requesting time fragmentation data")
+	chrome.runtime.sendMessage({msg:Dharana.MSG_QT_FRAGMENTATION}, function(timeFragData) {
+		Dharana.dlog('Got time fragmentation data: ' + JSON.stringify(timeFragData))
+			if (timeFragData.active > 0) {
+				var activePercentage = timeFragData.active / timeFragData.total * 100.0 + '%'
+				$("#meter-active").css('width', activePercentage)
+				$("#meter-text").text(Dharana.friendlyTime(timeFragData.active))
+				$("#meter").css('display', 'block')
+			} else {
+				$("#meter").css('display', 'none')
+			}
+	})
+}
+
 $(window).load(function() {
 	Dharana.LOGNAME = 'dharana-popup'
 	populateTaskLists()
+	setActivityMeter()
 })

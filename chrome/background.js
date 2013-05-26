@@ -6,6 +6,7 @@ STARTING -> NOT_ASANA
 
 var asanaTaskPattern = /^https:\/\/app\.asana\.com\/0\/([0-9]+)\/([0-9]+)$/
 var dharanaStartPattern = /\[dharana (start|end) (\d+)\]$/
+var dailyTimes = {}
 var activeTasks = {}
 var numActiveTasks = 0
 var lastStartedTask = {id:null, title:""}
@@ -82,10 +83,53 @@ function startAsanaTask(task, callback) {
 	})
 }
 
+function logDateStr(date) {
+	return (date.getFullYear() * 10000) + (date.getMonth() * 100) + (date.getDate())
+}
+
+function timeFragmentInfo(callback) {
+	var fragments = []
+	var today = new Date()
+	var midnightMillis = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0, 0)
+
+	$.each(activeTasks, function(tid, task) {
+		$.each(task.starts, function(txid, timeBlock) {
+			if (timeBlock.end == undefined || timeBlock.end > midnightMillis) {
+				var startTime = timeBlock.start >= midnightMillis ? timeBlock.start : midnightMillis
+				var fragmentIdx = -1
+				$.each(fragments, function(idx, fragment) {
+					if (timeBlock.start >= fragment.start
+						&& timeBlock.start <= fragment.end
+						&& timeBlock.end > fragment.end) {
+						fragments[idx].end = timeBlock.end
+						fragmentIdx = idx
+					}
+				})
+
+				if (fragmentIdx < 0) {
+					fragments.push({start:timeBlock.start, end:timeBlock.end})
+				}
+			}
+		})
+	})
+
+	var firstStart = Number.MAX_VALUE
+	var activeTime = 0
+	$.each(fragments, function(idx, fragment) {
+		firstStart = fragment.start < firstStart ? fragment.start : firstStart
+		activeTime += (fragment.end || Date.now()) - fragment.start
+		Dharana.dlog('Adding fragment ' + JSON.stringify(fragment) + ' activeTime now ' + activeTime)
+	})
+	
+	var totalTime = Date.now() - firstStart
+	callback({total:totalTime, active:activeTime})
+}
+
 function pauseAsanaTask(task, txid, callback) {
 	addStory(task.id, "Paused work [dharana end " + txid + "]", function(asanaResp) {
 		Dharana.dlog("Task pause logged")
 		task.starts[txid].end = (new Date(asanaResp.data.created_at)).getTime()
+
 		callback(task)
 	})
 }
@@ -212,6 +256,9 @@ $.getJSON('https://app.asana.com/api/1.0/users/me', function(data) {
 				return false
 			case Dharana.MSG_QT_TASKS:
 				tasks(resp)
+				return true
+			case Dharana.MSG_QT_FRAGMENTATION:
+				timeFragmentInfo(resp)
 				return true
 		}
 	})
