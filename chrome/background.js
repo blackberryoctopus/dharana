@@ -164,7 +164,9 @@ function addActiveTask(task) {
 
 function removeActiveTask(task) {
 	if (activeTasks[task.id] != undefined) {
-		delete activeTasks[task.id]
+		// delete activeTasks[task.id]
+		activeTasks[task.id].completed = task.completed
+		activeTasks[task.id].completed_at = task.completed_at
 		--numActiveTasks
 		chrome.browserAction.setBadgeText({text:(numActiveTasks > 0 ? numActiveTasks : '') + ''})
 	}
@@ -228,12 +230,14 @@ function popupTaskRecord(task) {
 function tasks(callback) {
 	var taskList = {activeTasks:[], startedTasks:[]}
 	$.each(activeTasks, function(tid, task) {
-		if (task.starts[task.lastTxId].end == undefined) {
-			// Task is active
-			taskList.activeTasks.push(popupTaskRecord(task))
-		} else {
-			// Task is started, but not active
-			taskList.startedTasks.push(popupTaskRecord(task))
+		if (!task.completed) {
+			if (task.starts[task.lastTxId].end == undefined) {
+				// Task is active
+				taskList.activeTasks.push(popupTaskRecord(task))
+			} else {
+				// Task is started, but not active
+				taskList.startedTasks.push(popupTaskRecord(task))
+			}
 		}
 	})
 
@@ -282,11 +286,11 @@ var checkDoneTimer = setInterval(function() {
 					if (task.starts[lastTxId].end == undefined) {
 						pauseAsanaTask(task, lastTxId, function() {
 							Dharana.dlog('Tx ' + lastTxId + ' on task ' + tid + ' automatically paused due to completion.')
-							removeActiveTask(task)
+							removeActiveTask(retrievedTask)
 						})
 					} else {
 						Dharana.dlog('Task ' + tid + ' is complete. Removing from active tasks.')
-						removeActiveTask(task)
+						removeActiveTask(retrievedTask)
 					}
 				}
 			})
