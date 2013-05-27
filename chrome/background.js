@@ -165,10 +165,12 @@ function addActiveTask(task) {
 function removeActiveTask(task) {
 	if (activeTasks[task.id] != undefined) {
 		// delete activeTasks[task.id]
-		activeTasks[task.id].completed = task.completed
-		activeTasks[task.id].completed_at = task.completed_at
-		--numActiveTasks
-		chrome.browserAction.setBadgeText({text:(numActiveTasks > 0 ? numActiveTasks : '') + ''})
+		if (!activeTasks[task.id].completed) {
+			activeTasks[task.id].completed = task.completed
+			activeTasks[task.id].completed_at = task.completed_at
+			--numActiveTasks
+			chrome.browserAction.setBadgeText({text:(numActiveTasks > 0 ? numActiveTasks : '') + ''})
+		}
 	}
 }
 
@@ -280,19 +282,21 @@ $.getJSON('https://app.asana.com/api/1.0/users/me', function(data) {
 // Setup timer to check status of active tasks
 var checkDoneTimer = setInterval(function() {
 		$.each(activeTasks, function(tid, task) {
-			getTask(tid, false, function(retrievedTask) {
-				if (retrievedTask.completed) {
-					var lastTxId = task.lastTxId
-					if (task.starts[lastTxId].end == undefined) {
-						pauseAsanaTask(task, lastTxId, function() {
-							Dharana.dlog('Tx ' + lastTxId + ' on task ' + tid + ' automatically paused due to completion.')
+			if (!task.completed) {
+				getTask(tid, false, function(retrievedTask) {
+					if (retrievedTask.completed) {
+						var lastTxId = task.lastTxId
+						if (task.starts[lastTxId].end == undefined) {
+							pauseAsanaTask(task, lastTxId, function() {
+								Dharana.dlog('Tx ' + lastTxId + ' on task ' + tid + ' automatically paused due to completion.')
+								removeActiveTask(retrievedTask)
+							})
+						} else {
+							Dharana.dlog('Task ' + tid + ' is complete. Removing from active tasks.')
 							removeActiveTask(retrievedTask)
-						})
-					} else {
-						Dharana.dlog('Task ' + tid + ' is complete. Removing from active tasks.')
-						removeActiveTask(retrievedTask)
+						}
 					}
-				}
-			})
+				})
+			}
 		})
 	}, 15000)
