@@ -67,30 +67,48 @@ function populateTaskLists() {
 	})
 }
 
-function setupActivityMeter() {
+function setupSpentTimeMeter(timeFragData) {
+	var displayedPct = timeFragData.active / (timeFragData.end - timeFragData.start) * 100.0 + '%'
+
+	$("#spent-meter > div.meter-active").css({
+		left: "0px",
+		width: displayedPct
+	})
+}
+
+function setupLoggedTimeMeter(timeFragData) {
+	$.each(timeFragData.data, function(idx, fragment) {
+		var activePeriod = timeFragData.end - timeFragData.start
+		var blockPct = (fragment.end - fragment.start) / activePeriod * 100.0 + '%'
+		var blockStart = (fragment.start - timeFragData.start) / activePeriod * 100.0 + '%'
+
+		$('<div>', {
+			class: "meter-active meter-active-block",
+			style: "left:" + blockStart + "; width:" + blockPct + ";"
+		}).appendTo('#block-meter')
+	})
+}
+
+function populateActivityMeters() {
 	Dharana.dlog("Requesting time fragmentation data")
 	chrome.runtime.sendMessage({msg:Dharana.MSG_QT_FRAGMENTATION}, function(timeFragData) {
 		Dharana.dlog('Got time fragmentation data: ' + JSON.stringify(timeFragData))
+		setupSpentTimeMeter(timeFragData)
+		setupLoggedTimeMeter(timeFragData)
 
-		var displayedPct = timeFragData.active / timeFragData.total * 100.0 + '%'
-		var hoverPct = timeFragData.active / timeFragData.logged * 100.0 + '%'
-
-		$("#meter").hover(
+		$("#meter-holder").hover(
 			function(inevt) {
-				$("#meter-active").css('width', hoverPct)
-				$("#meter-active").css('background-color', '#C0392B')
+				$("#spent-meter").css('display', 'none')
+				$("#block-meter").css('display', 'block')
 			},
 			function(outevt) {
-				$("#meter-active").css('width', displayedPct)
-				$("#meter-active").css('background-color', '#8E44AD')
+				$("#spent-meter").css('display', 'block')
+				$("#block-meter").css('display', 'none')
 			})
 
 		if (timeFragData.active > 0) {
-			$("#meter-active").css('width', displayedPct)
-			$("#meter-text").text(Dharana.friendlyTime(timeFragData.active))
-			$("#meter").css('display', 'block')
-		} else {
-			$("#meter").css('display', 'none')
+			$("#spent-meter > .meter-text").text(Dharana.friendlyTime(timeFragData.active))
+			$("#spent-meter").css('display', 'block')
 		}
 	})
 }
@@ -98,5 +116,5 @@ function setupActivityMeter() {
 $(window).load(function() {
 	Dharana.LOGNAME = 'dharana-popup'
 	populateTaskLists()
-	setupActivityMeter()
+	populateActivityMeters()
 })
