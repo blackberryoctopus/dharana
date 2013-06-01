@@ -169,22 +169,44 @@ function timeSpent(task) {
 	return time;
 }
 
+function updateBadge() {
+	var numActive = 0
+	var numOnHold = 0
+	$.each(activeTasks, function(tid, dharanaTask) {
+		if (!dharanaTask.completed) {
+			// If last start was not completed then active, otherwise on hold
+			if (dharanaTask.starts[dharanaTask.lastTxId].end == undefined) {
+				++numActive
+			} else {
+				++numOnHold
+			}
+		}
+	})
+
+	var badgeColor = "#2ECC71" // Badge default to green
+	if (numActive == 0) {
+		badgeColor = "#D35400" // if no active tasks, badge goes pumpkin
+	}
+
+	chrome.browserAction.setBadgeBackgroundColor({color:badgeColor})
+	chrome.browserAction.setBadgeText({text:numActive + numOnHold + ''})
+}
+
 function addActiveTask(task) {
 	if (activeTasks[task.id] == undefined) {
 		activeTasks[task.id] = task
 		++numActiveTasks
-		chrome.browserAction.setBadgeText({text:numActiveTasks + ''})
+		updateBadge()
 	}
 }
 
-function removeActiveTask(task) {
+function removeActiveTask(asanaTask) {
 	if (activeTasks[task.id] != undefined) {
 		// delete activeTasks[task.id]
 		if (!activeTasks[task.id].completed) {
 			activeTasks[task.id].completed = task.completed
 			activeTasks[task.id].completed_at = task.completed_at
-			--numActiveTasks
-			chrome.browserAction.setBadgeText({text:(numActiveTasks > 0 ? numActiveTasks : '') + ''})
+			updateBadge()
 		}
 	}
 }
@@ -212,6 +234,7 @@ function toggleTask(taskurl, callback) {
 					lastStartedTask.id = task.id
 					lastStartedTask.title = task.name
 					Dharana.dlog('lastStartedTask is now ' + JSON.stringify(lastStartedTask))
+					updateBadge()
 
 					var time = timeSpent(updatedTask)
 					callback({id: updatedTask.id, action: "started", time:time})
@@ -224,11 +247,13 @@ function toggleTask(taskurl, callback) {
 					lastStartedTask.id = null
 					lastStartedTask.title = ""
 					Dharana.dlog('lastStartedTask is now ' + JSON.stringify(lastStartedTask))
+					updateBadge()
 
 					var pausedStart = task.starts[task.lastTxId]
 					callback({id: updatedTask.id, action: "paused", time:(pausedStart.end - pausedStart.start)})
 				})
 			}
+
 		} else {
 			Dharana.dlog('Fetching task data')
 			getTask(taskid, true, function(task) {
@@ -264,7 +289,6 @@ function tasks(callback) {
 Dharana.LOGNAME = 'dharana-bg'
 
 // Set badge background color
-chrome.browserAction.setBadgeBackgroundColor({color:"#2ECC71"})
 
 // Fetch user data and start listening for
 // messages from the browser UI components
