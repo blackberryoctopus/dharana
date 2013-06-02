@@ -8,6 +8,11 @@ Dharana = {
 	MSG_QT_FRAGMENTATION: 'dharana.quicktime.fragmentation',
 
 	ERR_NOTASK: 'dharana.quicktime.notask',
+
+	TASKSTATE_COMPLETED: 0,
+	TASKSTATE_ONHOLD: 1,
+	TASKSTATE_ACTIVE: 2,
+	TASKSTATE_DEFAULT: 3,
 	
 	dlog: function(str) {
 		self = Dharana
