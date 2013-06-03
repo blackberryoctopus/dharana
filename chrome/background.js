@@ -167,7 +167,7 @@ function addActiveTask(task) {
 	}
 }
 
-function removeActiveTask(asanaTask) {
+function removeActiveTask(task) {
 	if (activeTasks[task.id] != undefined) {
 		// delete activeTasks[task.id]
 		if (!activeTasks[task.id].completed) {
@@ -286,7 +286,7 @@ var checkDoneTimer = setInterval(function() {
 				getTask(tid, false, function(retrievedTask) {
 					if (retrievedTask.completed) {
 						var lastTxId = task.lastTxId
-						if (task.starts[lastTxId].end == undefined) {
+						if (task.timeBlocks[lastTxId].end == undefined) {
 							pauseAsanaTask(task, lastTxId, function() {
 								Dharana.dlog('Tx ' + lastTxId + ' on task ' + tid + ' automatically paused due to completion.')
 								removeActiveTask(retrievedTask)
