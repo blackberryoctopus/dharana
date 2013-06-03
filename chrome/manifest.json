@@ -6,7 +6,7 @@
 	"content_security_policy": "script-src 'self'; object-src 'self'",
 
 	"background": {
-		"scripts": ["jquery.min.js", "dharana.js", "background.js"],
+		"scripts": ["jquery.min.js", "dharana.js", "dharana_task.js", "background.js"],
 		"persistent": true
 	},
 
