@@ -156,8 +156,10 @@ function updateBadge() {
 		badgeColor = "#D35400" // if no active tasks, badge goes pumpkin
 	}
 
+	var badgeText = (numActive == 0 && numOnHold == 0) ? "" : numActive + numOnHold + ''
+
 	chrome.browserAction.setBadgeBackgroundColor({color:badgeColor})
-	chrome.browserAction.setBadgeText({text:numActive + numOnHold + ''})
+	chrome.browserAction.setBadgeText({text:badgeText})
 }
 
 function addActiveTask(task) {
