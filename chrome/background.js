@@ -220,7 +220,7 @@ function tasks(callback) {
 
 Dharana.LOGNAME = 'dharana-bg'
 
-// Set badge background color
+updateBadge()
 
 // Fetch user data and start listening for
 // messages from the browser UI components
