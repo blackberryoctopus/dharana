@@ -76,65 +76,30 @@ function logDateStr(date) {
 }
 
 function timeFragmentInfo(callback) {
-	var fragments = []
 	var today = new Date()
 	var midnightMillis = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0, 0)
 	var now = Date.now()
 
+	var frag_tree = new FragmentTree()
+
 	$.each(activeTasks, function(tid, task) {
 		$.each(task.timeBlocks, function(txid, timeBlock) {
-			var physicalEnd = timeBlock.end || now
-			if (physicalEnd > midnightMillis) {
-				var startTime = timeBlock.start >= midnightMillis ? timeBlock.start : midnightMillis
-				var fragmentIdx = -1
-				for (var idx = 0; idx < fragments.length && fragmentIdx < 0; ++idx) {
-					fragment = fragments[idx]
-
-					// Extend the fragment start if
-					// 1. block starts before fragment start
-					// 2. block is open ended or block ends at or after fragment start
-					if (timeBlock.start < fragment.start && physicalEnd >= fragment.start) {
-						fragment.start = timeBlock.start
-						fragmentIdx = idx
-					}
-
-					// Extend the fragment end if
-					// 1. block starts before or at fragment end
-					// 2. block is open ended or block ends after fragment end
-					if (timeBlock.start <= fragment.end && physicalEnd > fragment.end) {
-						fragment.end = timeBlock.end
-						fragmentIdx = idx
-					}
-
-					// Update fragments if we expanded the fragment
-					if (fragmentIdx >= 0) {
-						fragment.tasks[tid] = true
-						fragments[idx] = fragment
-					}
-				}
-
-				if (fragmentIdx < 0) {
-					var newFragment = {start:timeBlock.start, end:physicalEnd, tasks:{}}
-					newFragment.tasks[tid] = true
-					fragments.push(newFragment)
-				}
-			}
+			frag_tree.addFragment(timeBlock.start, timeBlock.end)
 		})
 	})
 
-	var firstStart = Number.MAX_VALUE
-	var lastEnd = 0
+	var frag_list = frag_tree.fragmentList(midnightMillis, now)
+	var start = frag_list.length > 0 ? frag_list[0].start : undefined
+	var end = frag_list.length > 0 ? frag_list[frag_list.length - 1].end : undefined
+	var totalTime = end - start
+	var loggedTime = now - start
 	var activeTime = 0
-	$.each(fragments, function(idx, fragment) {
-		firstStart = fragment.start < firstStart ? fragment.start : firstStart
-		lastEnd = fragment.end > lastEnd ? fragment.end : lastEnd
-		activeTime += (fragment.end || now) - fragment.start
-		Dharana.dlog('Adding fragment ' + JSON.stringify(fragment) + ' activeTime now ' + activeTime)
+
+	$.each(frag_list, function(idx, span) {
+		activeTime += (span.end - span.start)
 	})
-	
-	var totalTime = now - firstStart
-	var loggedTime = lastEnd - firstStart
-	callback({start:firstStart, end:lastEnd, total:totalTime, logged:loggedTime, active:activeTime, data:fragments})
+
+	callback({start:start, end:end, total:totalTime, logged:loggedTime, active:activeTime, data:frag_list})
 }
 
 function updateBadge() {
