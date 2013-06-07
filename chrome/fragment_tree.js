@@ -6,50 +6,64 @@ function FragmentNode(start, end) {
 	this.right = null
 }
 
-FragmentNode.prototype.OVERLAP_STRICTLYBEFORE = 0
-FragmentNode.prototype.OVERLAP_ADJACENTBEFORE = 1
-FragmentNode.prototype.OVERLAP_COMPLETE = 2
-FragmentNode.prototype.OVERLAP_ADJACENTAFTER = 3
-FragmentNode.prototype.OVERLAP_STRICTLYAFTER = 4
-
-FragmentNode.prototype.overlaps = function(fragment) {
-	if (fragment.end < this.start - 1) {
-		return FragmentNode.OVERLAP_STRICTLYBEFORE
-	} else if (fragment.start > this.end + 1) {
-		return FragmentNode.OVERLAP_STRICTLYAFTER
-	} else if (fragment.end <= this.end && fragment.start <= this.start - 1) {
-		return FragmentNode.OVERLAP_ADJACENTBEFORE
-	} else if (fragment.start <= this.end + 1 && fragment.end > this.end) {
-		return FragmentNode.OVERLAP_ADJACENTAFTER
+FragmentNode.prototype.insertFragment = function(fragment) {
+	if (fragment.start < this.start) {
+		if (this.right != null) {
+			this.right.insertFragment(fragment)
+		} else {
+			this.right = fragment
+		}
+	} else if (fragment.start > this.start) {
+		if (this.left != null) {
+			this.left.insertFragment(fragment)
+		} else {
+			this.left = fragment
+		}
 	} else {
-		return FragmentNode.OVERLAP_COMPLETE
+		if (fragment.end == undefined) {
+			this.end = undefined
+		} else {
+			this.end = (fragment.end > this.end) ? fragment.end : this.end
+		}
 	}
 }
 
-FragmentNode.prototype.mergeFragment = function(fragment) {
-	switch(this.overlaps(fragment)) {
-		case FragmentNode.OVERLAP_COMPLETE:
-			break
+FragmentNode.prototype.mergeFragments = function(fragmentList, start, end) {
+	if (this.right != null) {
+		this.right.mergeFragments(fragmentList)
+	}
 
-		case FragmentNode.OVERLAP_STRICTLYBEFORE:
-			if (this.left != null) {
-				this.left.mergeFragment(fragment)
-				this.range.start = (fragment.start < this.range.start) ? fragment.start : this.range.start
-			} else {
-				this.left = fragment
+	// Check if this fragment falls within the bounds
+	// determined by start, end (if provided)
+	if (this.end == undefined || start && this.end > start || !start) {
+		if (end && this.start < end || !end) {
+			var effectiveStart = this.start
+			if (start && this.start < start) {
+				effectiveStart  = start    // Clip fragment start if before start
 			}
-			break
 
-		case FragmentNode.OVERLAP_STRICTLYAFTER:
-			if (this.right != null) {
-				this.right.mergeFragment(fragment)
-				this.range.end = (fragment.end > this.range.end) ? fragment.end : this.range.end
-			} else {
-				this.right = fragment
+			var effectiveEnd = this.end
+			if (end && (this.end == undefined || this.end > end)) {
+				effectiveEnd = end    // Clip fragment end if after end
 			}
-			break
 
-		case FragmentNode.OVERLAP_ADJACENTBEFORE:
+			if (fragmentList.length == 0) {
+				fragmentList.push({start:effectiveStart, end:effectiveEnd})
+			} else {
+				var lastFragment = fragmentList[fragmentList.length - 1]
+
+				// Merge with last fragment if there is overlap and end is defined
+				if (lastFragment.end && effectiveStart > lastFragment.start && effectiveStart <= lastFragment.end + 1) {
+					lastFragment.end = effectiveEnd
+				} else {
+					fragmentList.push({start:effectiveStart, end:effectiveEnd})
+				}
+			}
+		}
+	}
+
+	if (this.left != null) {
+		this.left.mergeFragments(fragmentList)
 	}
 }
 
@@ -62,6 +76,15 @@ FragmentTree.prototype.addFragment = function(start, end) {
 	if (this.root == null) {
 		this.root = newFragment
 	} else {
-		this.root.mergeFragment(newFragment)
+		this.root.insertFragment(newFragment)
 	}
+}
+
+FragmentTree.prototype.fragmentList = function(start, end) {
+	var fragmentList = []
+	if (this.root) {
+		this.root.mergeFragments(fragmentList, start, end)
+	}
+
+	return fragmentList
 }
