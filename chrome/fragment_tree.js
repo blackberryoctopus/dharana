@@ -30,7 +30,7 @@ FragmentNode.prototype.insertFragment = function(fragment) {
 
 FragmentNode.prototype.mergeFragments = function(fragmentList, start, end) {
 	if (this.right != null) {
-		this.right.mergeFragments(fragmentList)
+		this.right.mergeFragments(fragmentList, start, end)
 	}
 
 	// Check if this fragment falls within the bounds
@@ -53,9 +53,9 @@ FragmentNode.prototype.mergeFragments = function(fragmentList, start, end) {
 				var lastFragment = fragmentList[fragmentList.length - 1]
 
 				// Merge with last fragment if there is overlap and end is defined
-				if (lastFragment.end && effectiveStart > lastFragment.start && effectiveStart <= lastFragment.end + 1) {
+				if (lastFragment.end && effectiveStart > lastFragment.start && effectiveStart <= lastFragment.end + 1 && effectiveEnd > lastFragment.end) {
 					lastFragment.end = effectiveEnd
-				} else {
+				} else if (effectiveStart > lastFragment.end + 1) {
 					fragmentList.push({start:effectiveStart, end:effectiveEnd})
 				}
 			}
@@ -63,7 +63,7 @@ FragmentNode.prototype.mergeFragments = function(fragmentList, start, end) {
 	}
 
 	if (this.left != null) {
-		this.left.mergeFragments(fragmentList)
+		this.left.mergeFragments(fragmentList, start, end)
 	}
 }
 
