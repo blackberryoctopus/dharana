@@ -11,7 +11,6 @@ function DharanaQuicktime() {
 
 	Dharana.LOGNAME = 'dharana-quicktime'
 	this.setup()
-	this.listen()
 }
 
 DharanaQuicktime.prototype.keycode_ctrl = 17       // ctrl
@@ -42,9 +41,10 @@ DharanaQuicktime.prototype.toggleVisibility = function() {
 
 	// Hide the notification panel after 3s if we showed it
 	if (this.is_visible) {
+		var self = this
 		this.autohide_timer = setTimeout(function() {
 			Dharana.dlog('Auto-hiding notification box')
-			this.setVisibility(false)
+			self.setVisibility(false)
 		}, 3000)
 	}
 }
@@ -145,12 +145,8 @@ DharanaQuicktime.prototype.keyUpHandler = function(e) {
 	}
 }
 
-DharanaQuicktime.prototype.listen = function() {
-	Dharana.dlog('Listening for quicktime hotkey on ' + window.location.href)
-	var self = this
-	window.addEventListener('keydown', function(e) { self.keyDownHandler(e) }, true)
-	window.addEventListener('keyup', function(e) { self.keyUpHandler(e) }, true)
-}
-
 var _dharana_qt = new DharanaQuicktime()
+window.addEventListener('keydown', function(e) { _dharana_qt.keyDownHandler(e) }, true)
+window.addEventListener('keyup', function(e) { _dharana_qt.keyUpHandler(e) }, true)
+
 Dharana.dlog('Injected')
