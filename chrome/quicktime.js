@@ -36,17 +36,19 @@ DharanaQuicktime.prototype.setVisibility = function(visible) {
 	}
 }
 
-DharanaQuicktime.prototype.toggleVisibility = function() {
-	this.setVisibility(!this.is_visible)
+DharanaQuicktime.prototype.showMessage = function(msg) {
+	this.notification_message.textContent = msg
+	this.setVisibility(true)
 
-	// Hide the notification panel after 3s if we showed it
-	if (this.is_visible) {
-		var self = this
-		this.autohide_timer = setTimeout(function() {
-			Dharana.dlog('Auto-hiding notification box')
-			self.setVisibility(false)
-		}, 3000)
+	if (this.autohide_timer) {
+		clearTimeout(this.autohide_timer)
 	}
+
+	var self = this
+	this.autohide_timer = setTimeout(function() {
+		Dharana.dlog('Auto-hiding notification box')
+		self.setVisibility(false)
+	}, 3000)
 }
 
 DharanaQuicktime.prototype.setup = function() {
@@ -126,8 +128,7 @@ DharanaQuicktime.prototype.keyDownHandler = function(e) {
 								break
 						}
 
-						self.notification_message.textContent = notification
-						self.toggleVisibility()
+						self.showMessage(notification)
 					})
 
 				e.preventDefault()
