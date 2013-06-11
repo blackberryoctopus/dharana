@@ -52,12 +52,12 @@ function createTaskListItem(task, taskState) {
 		id: task.id
 	})
 
-	var taskLinkIcon = $('<i>', {class: 'icon-chevron-right icon-white'}).appendTo(taskLinkSpan)
-	taskLinkIcon.click(function(evt) {
+	var taskDetailIcon = $('<i>', {class: 'icon-adjust icon-white rpad'}).appendTo(taskLinkSpan)
+	taskDetailIcon.click(function(evt) {
 		showDetailPanel(task)
 	})
 
-	/*
+	var taskLinkIcon = $('<i>', {class: 'icon-chevron-right icon-white'}).appendTo(taskLinkSpan)
 	taskLinkIcon.click(function(evt) {
 		chrome.tabs.query({active:true, currentWindow:true}, function(tabs) {
 			if (tabs.length > 0) {
@@ -68,7 +68,6 @@ function createTaskListItem(task, taskState) {
 			}
 		})
 	})
-	*/
 
 	taskLinkSpan.appendTo(taskListItem)
 

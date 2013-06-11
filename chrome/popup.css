@@ -34,7 +34,7 @@ ul.tasklist li.task-started {
 }
 
 ul.tasklist li .taskname {
-	padding-right: 21px;
+	padding-right: 35px;
 }
 
 ul.tasklist li .link {
@@ -42,6 +42,10 @@ ul.tasklist li .link {
 	top: 7px;
 	right: 7px;
 	visibility: hidden;
+}
+
+i.rpad {
+	margin-right: 3px;
 }
 
 div#taskdetail-panel div#taskdetail-name {
