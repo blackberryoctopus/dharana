@@ -1,5 +1,25 @@
 var currentTask = {}
 
+function setupDetailPanel(task) {
+	var taskNameSpan = $("#taskdetail-panel > #taskdetail-name > #taskname")
+	taskNameSpan.text(task.name)
+
+	var taskLink = $("#taskdetail-panel > #taskdetail-name > span.link > i")
+	taskLink.unbind('click')
+	taskLink.click(function(e) { showTaskListPanel() })
+}
+
+function showDetailPanel(task) {
+	setupDetailPanel(task)
+	$("#tasklist-panel").css('display', 'none')
+	$("#taskdetail-panel").css('display', 'block')
+}
+
+function showTaskListPanel() {
+	$("#taskdetail-panel").css('display', 'none')
+	$("#tasklist-panel").css('display', 'block')
+}
+
 function createTaskListItem(task, taskState) {
 	var taskClass = ''
 	switch(taskState) {
@@ -34,6 +54,11 @@ function createTaskListItem(task, taskState) {
 
 	var taskLinkIcon = $('<i>', {class: 'icon-chevron-right icon-white'}).appendTo(taskLinkSpan)
 	taskLinkIcon.click(function(evt) {
+		showDetailPanel(task)
+	})
+
+	/*
+	taskLinkIcon.click(function(evt) {
 		chrome.tabs.query({active:true, currentWindow:true}, function(tabs) {
 			if (tabs.length > 0) {
 				chrome.tabs.update(tabs[0].id, {url: task.link})
@@ -43,6 +68,7 @@ function createTaskListItem(task, taskState) {
 			}
 		})
 	})
+	*/
 
 	taskLinkSpan.appendTo(taskListItem)
 

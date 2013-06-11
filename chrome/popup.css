@@ -27,11 +27,14 @@ ul.tasklist li.task-started {
 	background-color: #F39C12;
 }
 
-ul.tasklist li .taskname {
-	padding-right: 21px;
+.taskname {
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
+}
+
+ul.tasklist li .taskname {
+	padding-right: 21px;
 }
 
 ul.tasklist li .link {
@@ -39,6 +42,22 @@ ul.tasklist li .link {
 	top: 7px;
 	right: 7px;
 	visibility: hidden;
+}
+
+div#taskdetail-panel div#taskdetail-name {
+	position: relative;
+	padding: 7px;
+	margin: 0px;
+}
+
+div#taskdetail-panel div#taskdetail-name .link {
+	position: absolute;
+	top: 7px;
+	left: 7px;
+}
+
+div#taskdetail-panel div#taskdetail-name #taskname {
+	padding-left: 21px;
 }
 
 div.meterwrapper {
@@ -75,6 +94,10 @@ div.meterwrapper div.meter-text {
 	background-color: transparent;
 	color: #ECF0F1;
 	text-align: center;
+}
+
+div#taskdetail-panel {
+	display: none;
 }
 
 .startstop {
