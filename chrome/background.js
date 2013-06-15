@@ -106,13 +106,15 @@ function updateBadge() {
 	var numActive = 0
 	var numOnHold = 0
 	$.each(activeTasks, function(tid, task) {
-		switch(task.getState()) {
-			case Dharana.TASKSTATE_ONHOLD:
-				++numOnHold
-				break
-			case Dharana.TASKSTATE_ACTIVE:
-				++numActive
-				break
+		if (!task.completed) {
+			switch(task.getState()) {
+				case Dharana.TASKSTATE_ONHOLD:
+					++numOnHold
+					break
+				case Dharana.TASKSTATE_ACTIVE:
+					++numActive
+					break
+			}
 		}
 	})
 
