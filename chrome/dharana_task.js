@@ -10,15 +10,12 @@ function DharanaTask(asanaTask) {
 
 DharanaTask.prototype.getState = function() {
 	/*
-	Complete: completed
 	On hold:  work logged, but not marked completed
 	Active:   work ongoing
 	Default:  no work logged
    */
 
-	if (this.completed) {
-		return Dharana.TASKSTATE_COMPLETED
-	} else if (!$.isEmptyObject(this.timeBlocks) && this.timeBlocks[this.lastTxId].end != undefined) {
+	if (!$.isEmptyObject(this.timeBlocks) && this.timeBlocks[this.lastTxId].end != undefined) {
 		return Dharana.TASKSTATE_ONHOLD
 	} else if (!$.isEmptyObject(this.timeBlocks) && this.timeBlocks[this.lastTxId].end == undefined) {
 		return Dharana.TASKSTATE_ACTIVE

@@ -165,6 +165,7 @@ function toggleTask(taskurl, callback) {
 			Dharana.dlog('Got task ' + JSON.stringify(task))
 
 			var state = task.getState()
+			Dharana.dlog('Task status is ' + state)
 
 			if (state === Dharana.TASKSTATE_ONHOLD || state === Dharana.TASKSTATE_DEFAULT) {
 				// No starts or last start closed
