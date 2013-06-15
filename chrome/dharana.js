@@ -1,3 +1,5 @@
+var asanaTaskPattern = /^https:\/\/app\.asana\.com\/0\/([0-9]+)\/([0-9]+)$/
+
 Dharana = {
 	EXTENSIONID: 'dharana_chrome',
 	LOGNAME: 'dharana-unknown',

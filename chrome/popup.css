@@ -27,6 +27,10 @@ ul.tasklist li.task-started {
 	background-color: #F39C12;
 }
 
+ul.tasklist li.task-current {
+	background-color: #95A5A6;
+}
+
 .taskname {
 	white-space: nowrap;
 	overflow: hidden;

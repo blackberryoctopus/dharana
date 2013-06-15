@@ -4,7 +4,6 @@ STARTING -> NOT_ASANA
          -> READY -> FETCHING -> AVAILABLE
 */
 
-var asanaTaskPattern = /^https:\/\/app\.asana\.com\/0\/([0-9]+)\/([0-9]+)$/
 var dharanaStartPattern = /\[dharana (start|end) (\d+)\]$/
 var dailyTimes = {}
 var activeTasks = {}
@@ -203,8 +202,7 @@ function popupTaskRecord(task) {
 	return {id:task.id, name:task.name, link:task.lastUrl}
 }
 
-function tasks(callback) {
-	var taskList = {activeTasks:[], startedTasks:[]}
+function sendTasks(taskList, callback) {
 	$.each(activeTasks, function(tid, task) {
 		if (!task.completed) {
 			switch(task.getState()) {
@@ -219,6 +217,24 @@ function tasks(callback) {
 	})
 
 	callback(taskList)
+}
+
+function tasks(curr, callback) {
+	var taskList = {activeTasks:[], startedTasks:[], currentTask:null}
+
+	if (curr != undefined) {
+		if (activeTasks[curr] != undefined) {
+			taskList.currentTask = activeTasks[curr]
+			sendTasks(taskList, callback)
+		} else {
+			getTask(curr, true, function(task) {
+				taskList.currentTask = task
+				sendTasks(taskList, callback)
+			})
+		}
+	} else {
+		sendTasks(taskList, callback)
+	}
 }
 
 Dharana.LOGNAME = 'dharana-bg'
@@ -240,7 +256,7 @@ $.getJSON('https://app.asana.com/api/1.0/users/me', function(data) {
 				toggleTask(msg.data, resp)
 				return true
 			case Dharana.MSG_QT_TASKS:
-				tasks(resp)
+				tasks(msg.curr, resp)
 				return true
 			case Dharana.MSG_QT_FRAGMENTATION:
 				timeFragmentInfo(resp)

@@ -29,6 +29,9 @@ function createTaskListItem(task, taskState) {
 		case "started":
 			taskClass = 'task-started'
 			break
+		case "current":
+			taskClass = 'task-current'
+			break
 	}
 
 	var taskListItem = $('<li>', {
@@ -39,11 +42,11 @@ function createTaskListItem(task, taskState) {
 	taskListItem.hover(
 		function(evt) {
 			Dharana.dlog('hover in on task ' + task.id)
-			$('ul#tasks > li > span#' + task.id).css('visibility', 'visible')
+			$('ul.tasklist > li > span#' + task.id).css('visibility', 'visible')
 		},
 		function(evt) {
 			Dharana.dlog('hover out on task ' + task.id)
-			$('ul#tasks > li > span#' + task.id).css('visibility', 'hidden')
+			$('ul.tasklist > li > span#' + task.id).css('visibility', 'hidden')
 		})
 
 	var taskNameSpan = $('<div>', {class: 'taskname', text: task.name}).appendTo(taskListItem)
@@ -75,20 +78,37 @@ function createTaskListItem(task, taskState) {
 }
 
 function populateTaskLists() {
-	Dharana.dlog("Requesting task data")
-	chrome.runtime.sendMessage({msg:Dharana.MSG_QT_TASKS}, function(taskList) {
-		Dharana.dlog('Got task list: ' + JSON.stringify(taskList))
-		if (taskList.activeTasks.length > 0 || taskList.startedTasks.length > 0) {
-			$.each(taskList.activeTasks, function(idx, task) {
-				createTaskListItem(task, "active").appendTo('#tasks')
-			})
 
-			$.each(taskList.startedTasks, function(idx, task) {
-				createTaskListItem(task, "started").appendTo('#tasks')
-			})
-		} else {
-			$("#no-items").css('display', 'block')
+	var currentTaskId = null
+	chrome.tabs.query({active:true, currentWindow:true}, function(tabs) {
+		var tab = tabs[0]
+		var currentTaskId = null
+		var taskUrlComponents = asanaTaskPattern.exec(tab.url)
+
+		if (taskUrlComponents && taskUrlComponents.length == 3 && taskUrlComponents[1] != taskUrlComponents[2]) {
+			currentTaskId = taskUrlComponents[2]
+			Dharana.dlog('Current task id is ' + currentTaskId)
 		}
+
+		Dharana.dlog("Requesting task data")
+		chrome.runtime.sendMessage({msg:Dharana.MSG_QT_TASKS, curr:currentTaskId}, function(taskList) {
+			Dharana.dlog('Got task list: ' + JSON.stringify(taskList))
+			if (taskList.activeTasks.length > 0 || taskList.startedTasks.length > 0) {
+				$.each(taskList.activeTasks, function(idx, task) {
+					createTaskListItem(task, "active").appendTo('#tasks')
+				})
+
+				$.each(taskList.startedTasks, function(idx, task) {
+					createTaskListItem(task, "started").appendTo('#tasks')
+				})
+			} else {
+				$("#no-items").css('display', 'block')
+			}
+
+			if (taskList.currentTask != null) {
+				createTaskListItem(taskList.currentTask, "current").appendTo('#activetask')
+			}
+		})
 	})
 }
 
