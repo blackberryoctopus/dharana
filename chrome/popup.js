@@ -93,19 +93,28 @@ function populateTaskLists() {
 		Dharana.dlog("Requesting task data")
 		chrome.runtime.sendMessage({msg:Dharana.MSG_QT_TASKS, curr:currentTaskId}, function(taskList) {
 			Dharana.dlog('Got task list: ' + JSON.stringify(taskList))
+
+			var listedCurrentTask = false
+
 			if (taskList.activeTasks.length > 0 || taskList.startedTasks.length > 0) {
 				$.each(taskList.activeTasks, function(idx, task) {
 					createTaskListItem(task, "active").appendTo('#tasks')
+					if (task.id == taskList.currentTask.id) {
+						listedCurrentTask = true
+					}
 				})
 
 				$.each(taskList.startedTasks, function(idx, task) {
 					createTaskListItem(task, "started").appendTo('#tasks')
+					if (task.id == taskList.currentTask.id) {
+						listedCurrentTask = true
+					}
 				})
 			} else {
 				$("#no-items").css('display', 'block')
 			}
 
-			if (taskList.currentTask != null) {
+			if (!listedCurrentTask && taskList.currentTask != null) {
 				createTaskListItem(taskList.currentTask, "current").appendTo('#activetask')
 			}
 		})
