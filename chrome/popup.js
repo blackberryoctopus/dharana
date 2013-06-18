@@ -97,6 +97,9 @@ function populateTaskLists() {
 			var listedCurrentTask = false
 
 			if (taskList.activeTasks.length > 0 || taskList.startedTasks.length > 0) {
+				// TODO check if currentTask is defined
+				// TODO make this loop a function to eliminate repetition in 2nd loop below
+
 				$.each(taskList.activeTasks, function(idx, task) {
 					createTaskListItem(task, "active").appendTo('#tasks')
 					if (task.id == taskList.currentTask.id) {
