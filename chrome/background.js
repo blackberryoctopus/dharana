@@ -237,6 +237,57 @@ function tasks(curr, callback) {
 	}
 }
 
+function fetchTasks(taskStubList, callback) {
+	var task = taskStubList.pop()
+
+	if (task != undefined) {
+		if (!task.completed && activeTasks[task.id] == undefined) {
+			getTask(task.id, true, function(dharanaTask) {
+				Dharana.dlog('Got task ' + dharanaTask.id + '. ' + taskStubList.length + ' more to go.')
+				addActiveTask(dharanaTask)
+				setTimeout(function() {
+					fetchTasks(taskStubList, callback)
+				}, 1200)
+			})
+		} else {
+			Dharana.dlog('Skipping task ' + task.id + ': ' + (task.completed ? 'already completed' : 'already fetched'))
+			fetchTasks(taskStubList, callback)
+		}
+	} else {
+		Dharana.dlog('No more tasks to fetch.')
+		callback()
+	}
+}
+
+function fetchTaskStubs(projects, tasks, callback) {
+	var project = projects.pop()
+	var taskList = tasks || []
+
+	if (project != undefined) {
+		$.getJSON('https://app.asana.com/api/1.0/projects/' + project.id + '/tasks?opt_fields=id,completed', function(taskListData) {
+			Dharana.dlog('Got task stubs for project ' + project.id + '. ' + projects.length + ' more to go.')
+			$.each(taskListData.data, function(idx, task) {
+				if (!task.completed) {
+					taskList.push(task)
+				}
+			})
+
+			setTimeout(function() {
+				fetchTaskStubs(projects, taskList, callback)
+			}, 600)
+		})
+	} else {
+		Dharana.dlog('No more projects. Fetching task details.')
+		fetchTasks(taskList, callback)
+	}
+}
+
+function restoreTasks(callback) {
+	$.getJSON('https://app.asana.com/api/1.0/projects', function(projectListData) {
+		fetchTaskStubs(projectListData.data, [], callback)
+	})
+}
+
 function listen() {
 	chrome.runtime.onMessage.addListener(function(msg, sender, resp) {
 		Dharana.dlog("Got a message: " + JSON.stringify(msg || '{msg:"none"}'))
@@ -254,22 +305,9 @@ function listen() {
 	})
 }
 
-Dharana.LOGNAME = 'dharana-bg'
-
-updateBadge()
-
-// Fetch user data and start listening for
-// messages from the browser UI components
-
-Dharana.dlog("Fetching user data")
-$.getJSON('https://app.asana.com/api/1.0/users/me', function(data) {
-	currentUser = data.data
-	Dharana.dlog("Current user is " + JSON.stringify(currentUser))
-	listen()
-})
-
-// Setup timer to check status of active tasks
-var checkDoneTimer = setInterval(function() {
+function startDoneTimer() {
+	// Setup timer to check status of active tasks
+	setInterval(function() {
 		$.each(activeTasks, function(tid, task) {
 			if (!task.completed) {
 				getTask(tid, false, function(retrievedTask) {
@@ -289,3 +327,22 @@ var checkDoneTimer = setInterval(function() {
 			}
 		})
 	}, 15000)
+}
+
+Dharana.LOGNAME = 'dharana-bg'
+
+updateBadge()
+
+// Fetch user data and start listening for
+// messages from the browser UI components
+
+Dharana.dlog("Fetching user data")
+$.getJSON('https://app.asana.com/api/1.0/users/me', function(data) {
+	currentUser = data.data
+	Dharana.dlog("Current user is " + JSON.stringify(currentUser))
+	restoreTasks(function() {
+		listen()
+		startDoneTimer()
+	})
+})
+
