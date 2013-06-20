@@ -237,18 +237,7 @@ function tasks(curr, callback) {
 	}
 }
 
-Dharana.LOGNAME = 'dharana-bg'
-
-updateBadge()
-
-// Fetch user data and start listening for
-// messages from the browser UI components
-
-Dharana.dlog("Fetching user data")
-$.getJSON('https://app.asana.com/api/1.0/users/me', function(data) {
-	currentUser = data.data
-	Dharana.dlog("Current user is " + JSON.stringify(currentUser))
-
+function listen() {
 	chrome.runtime.onMessage.addListener(function(msg, sender, resp) {
 		Dharana.dlog("Got a message: " + JSON.stringify(msg || '{msg:"none"}'))
 		switch(msg.msg) {
@@ -263,6 +252,20 @@ $.getJSON('https://app.asana.com/api/1.0/users/me', function(data) {
 				return true
 		}
 	})
+}
+
+Dharana.LOGNAME = 'dharana-bg'
+
+updateBadge()
+
+// Fetch user data and start listening for
+// messages from the browser UI components
+
+Dharana.dlog("Fetching user data")
+$.getJSON('https://app.asana.com/api/1.0/users/me', function(data) {
+	currentUser = data.data
+	Dharana.dlog("Current user is " + JSON.stringify(currentUser))
+	listen()
 })
 
 // Setup timer to check status of active tasks
