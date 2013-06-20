@@ -77,6 +77,18 @@ function createTaskListItem(task, taskState) {
 	return taskListItem
 }
 
+function populateList(tasks, list, itemClass, currentTaskId) {
+	var listedCurrent = false
+	$.each(tasks, function(idx, task) {
+		createTaskListItem(task, itemClass).appendTo(list)
+		if (currentTaskId && task.id == currentTaskId) {
+			listedCurrent = true
+		}
+	})
+
+	return listedCurrent
+}
+
 function populateTaskLists() {
 
 	var currentTaskId = null
@@ -97,22 +109,8 @@ function populateTaskLists() {
 			var listedCurrentTask = false
 
 			if (taskList.activeTasks.length > 0 || taskList.startedTasks.length > 0) {
-				// TODO check if currentTask is defined
-				// TODO make this loop a function to eliminate repetition in 2nd loop below
-
-				$.each(taskList.activeTasks, function(idx, task) {
-					createTaskListItem(task, "active").appendTo('#tasks')
-					if (task.id == taskList.currentTask.id) {
-						listedCurrentTask = true
-					}
-				})
-
-				$.each(taskList.startedTasks, function(idx, task) {
-					createTaskListItem(task, "started").appendTo('#tasks')
-					if (task.id == taskList.currentTask.id) {
-						listedCurrentTask = true
-					}
-				})
+				listedCurrentTask = populateList(taskList.activeTasks, '#tasks', 'active', currentTaskId)
+				listedCurrentTask = populateList(taskList.startedTasks, '#tasks', 'started', currentTaskId) || listedCurrentTask
 			} else {
 				$("#no-items").css('display', 'block')
 			}
