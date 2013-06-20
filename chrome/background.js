@@ -244,7 +244,11 @@ function fetchTasks(taskStubList, callback) {
 		if (!task.completed && activeTasks[task.id] == undefined) {
 			getTask(task.id, true, function(dharanaTask) {
 				Dharana.dlog('Got task ' + dharanaTask.id + '. ' + taskStubList.length + ' more to go.')
-				addActiveTask(dharanaTask)
+				var state = dharanaTask.getState()
+				if (state == Dharana.TASKSTATE_ACTIVE || state == Dharana.TASKSTATE_ONHOLD) {
+					addActiveTask(dharanaTask)
+				}
+
 				setTimeout(function() {
 					fetchTasks(taskStubList, callback)
 				}, 1200)
