@@ -336,6 +336,7 @@ function startDoneTimer() {
 Dharana.LOGNAME = 'dharana-bg'
 
 updateBadge()
+listen()
 
 var asana = new AsanaGateway()
 
@@ -347,7 +348,6 @@ asana.request('/users/me', function(data) {
 	currentUser = data.data
 	Dharana.dlog("Current user is " + JSON.stringify(currentUser))
 	restoreTasks(function() {
-		listen()
 		startDoneTimer()
 	})
 })
