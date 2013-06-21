@@ -1,5 +1,5 @@
 function AsanaGateway() {
-	this.rateLimit = 80 / 60000  // Default rate (req/ms) = 100 req / min
+	this.rateLimit = 80 / 60000  // Default rate (req/ms) = 80 req / min
 	this.tokenLimit = 80
 	this.tokenCount = 80
 	this.lastRequestTime = Date.now()
