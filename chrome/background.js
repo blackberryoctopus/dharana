@@ -45,12 +45,9 @@ function getTask(taskid, stories, callback) {
 }
 
 function addStory(taskid, storyText, callback) {
-	$.post('https://app.asana.com/api/1.0/tasks/' + taskid + '/stories',
-		{"text":storyText},
-		function(data, status, xhr) {
-			callback(data)
-		},
-		"json")
+	asana.request('/tasks/' + taskid + '/stories', function(data) {
+		callback(data)
+	}, storyText)
 }
 
 function startAsanaTask(task, callback) {
