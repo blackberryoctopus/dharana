@@ -13,7 +13,7 @@ var currentUser = null
 function getTask(taskid, stories, callback) {
 	Dharana.dlog("Fetching data for task ID " + taskid)
 	// Get main task data
-	$.getJSON('https://app.asana.com/api/1.0/tasks/' + taskid, function(data) {
+	asana.request('/tasks/' + taskid, function(data) {
 		var task = new DharanaTask(data.data)
 
 		if (!stories) {
@@ -23,7 +23,7 @@ function getTask(taskid, stories, callback) {
 
 		Dharana.dlog("Fetching stories for task ID " + taskid)
 		// Get task stories
-		$.getJSON('https://app.asana.com/api/1.0/tasks/' + taskid + '/stories', function(data) {
+		asana.request('/tasks/' + taskid + '/stories', function(data) {
 			var lastTxId = -1
 
 			$.each(data.data, function(idx, story) {
@@ -238,56 +238,56 @@ function tasks(curr, callback) {
 }
 
 function fetchTasks(taskStubList, callback) {
-	var task = taskStubList.pop()
+	var taskFetches = 0
+	var completedFetches = 0
 
-	if (task != undefined) {
+	$.each(taskStubList, function(idx, task) {
 		if (!task.completed && activeTasks[task.id] == undefined) {
+			++taskFetches
 			getTask(task.id, true, function(dharanaTask) {
-				Dharana.dlog('Got task ' + dharanaTask.id + '. ' + taskStubList.length + ' more to go.')
+				++completedFetches
+				Dharana.dlog('Got task ' + dharanaTask.id + '. ' + (taskFetches - completedFetches) + ' more to go.')
+
 				var state = dharanaTask.getState()
 				if (state == Dharana.TASKSTATE_ACTIVE || state == Dharana.TASKSTATE_ONHOLD) {
 					addActiveTask(dharanaTask)
 				}
 
-				setTimeout(function() {
-					fetchTasks(taskStubList, callback)
-				}, 1200)
+				if (completedFetches == taskFetches) {
+					callback()
+				}
 			})
 		} else {
 			Dharana.dlog('Skipping task ' + task.id + ': ' + (task.completed ? 'already completed' : 'already fetched'))
-			fetchTasks(taskStubList, callback)
 		}
-	} else {
-		Dharana.dlog('No more tasks to fetch.')
-		callback()
-	}
+	})
 }
 
 function fetchTaskStubs(projects, tasks, callback) {
-	var project = projects.pop()
 	var taskList = tasks || []
+	var fetchedProjects = 0
 
-	if (project != undefined) {
-		$.getJSON('https://app.asana.com/api/1.0/projects/' + project.id + '/tasks?opt_fields=id,completed', function(taskListData) {
-			Dharana.dlog('Got task stubs for project ' + project.id + '. ' + projects.length + ' more to go.')
+	$.each(projects, function(idx, project) {
+		asana.request('/projects/' + project.id + '/tasks?opt_fields=id,completed', function(taskListData) {
+			Dharana.dlog('Got task stubs for project ' + project.id)
 			$.each(taskListData.data, function(idx, task) {
 				if (!task.completed) {
 					taskList.push(task)
 				}
 			})
 
-			setTimeout(function() {
-				fetchTaskStubs(projects, taskList, callback)
-			}, 600)
+			++fetchedProjects
+
+			if (fetchedProjects == projects.length) {
+				Dharana.dlog('Finished fetching stubs.')
+				fetchTasks(taskList, callback)
+			}
 		})
-	} else {
-		Dharana.dlog('No more projects. Fetching task details.')
-		fetchTasks(taskList, callback)
-	}
+	})
 }
 
 function restoreTasks(callback) {
-	$.getJSON('https://app.asana.com/api/1.0/projects', function(projectListData) {
+	asana.request('/projects', function(projectListData) {
 		fetchTaskStubs(projectListData.data, [], callback)
 	})
 }
@@ -337,11 +337,13 @@ Dharana.LOGNAME = 'dharana-bg'
 
 updateBadge()
 
+var asana = new AsanaGateway()
+
 // Fetch user data and start listening for
 // messages from the browser UI components
 
 Dharana.dlog("Fetching user data")
-$.getJSON('https://app.asana.com/api/1.0/users/me', function(data) {
+asana.request('/users/me', function(data) {
 	currentUser = data.data
 	Dharana.dlog("Current user is " + JSON.stringify(currentUser))
 	restoreTasks(function() {
