@@ -1,7 +1,8 @@
 function AsanaGateway() {
-	this.rateLimit = 90 / 60000  // Default rate (req/ms) = 80 req / min
-	this.tokenLimit = 90
-	this.tokenCount = 90
+	this.asanaLimit = 90 // Default rate (req/ms) = 90 req / min
+	this.rateLimit = this.asanaLimit / 60000  
+	this.tokenLimit = this.asanaLimit
+	this.tokenCount = this.asanaLimit
 	this.lastRequestTime = Date.now()
 	this.endpoint = 'https://app.asana.com/api/1.0'
 	this.queuedTasks = 0
